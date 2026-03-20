@@ -147,6 +147,7 @@ def generate(model, tokenizer, prompt: str, max_new_tokens: int = 512) -> str:
             temperature=0.1,
             top_p=0.9,
             do_sample=True,
+            use_cache=False,
         )
     generated = tokenizer.decode(
         output_ids[0][inputs["input_ids"].shape[1] :],
