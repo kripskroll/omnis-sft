@@ -1,0 +1,1236 @@
+{
+  "timestamp": "2026-03-20T18:06:43.720300+00:00",
+  "num_questions": 50,
+  "composite_score": 0.5362,
+  "component_scores": {
+    "tool_selection": 0.48,
+    "argument_accuracy": 0.7367,
+    "chain_continuation": 0.8,
+    "reasoning_relevance": 0.0
+  },
+  "weights": {
+    "tool_selection": 0.4,
+    "argument_accuracy": 0.25,
+    "chain_continuation": 0.2,
+    "reasoning_relevance": 0.15
+  },
+  "by_difficulty": {
+    "easy": {
+      "score": 0.675,
+      "count": 12
+    },
+    "hard": {
+      "score": 0.5118,
+      "count": 19
+    },
+    "medium": {
+      "score": 0.4728,
+      "count": 19
+    }
+  },
+  "by_workflow": {
+    "app_performance": 0.55,
+    "bandwidth_analysis": 0.665,
+    "cross_site_path": 0.325,
+    "dns_investigation": 0.3792,
+    "health_triage": 0.48,
+    "host_investigation": 0.48,
+    "mysql_troubleshooting": 0.5917,
+    "security_scan": 0.72,
+    "site_performance": 0.72,
+    "wrong_path_recovery": 0.44
+  },
+  "individual_results": [
+    {
+      "id": "benchmark_01",
+      "question": "How is the network doing?",
+      "workflow": "health_triage",
+      "difficulty": "easy",
+      "expected_tool": "get_health_overview",
+      "expected_args": {},
+      "predicted_tool": "get_health_overview",
+      "predicted_args": {},
+      "expected_second_tool": "get_application_summary",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.65
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_health_overview\", \"arguments\": {}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_02",
+      "question": "Give me an overview of the network health for the last 6 hours.",
+      "workflow": "health_triage",
+      "difficulty": "easy",
+      "expected_tool": "get_health_overview",
+      "expected_args": {
+        "hours": 6
+      },
+      "predicted_tool": "get_health_overview",
+      "predicted_args": {
+        "hours": 6
+      },
+      "expected_second_tool": "get_application_summary",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.65
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_health_overview\", \"arguments\": {\"hours\": 6}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_03",
+      "question": "Which applications have the highest error rates right now?",
+      "workflow": "health_triage",
+      "difficulty": "medium",
+      "expected_tool": "get_health_overview",
+      "expected_args": {},
+      "predicted_tool": "get_application_summary",
+      "predicted_args": {
+        "application": null
+      },
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.25
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application\": null}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_04",
+      "question": "Is the Francfort DC site healthy? Check all applications there.",
+      "workflow": "health_triage",
+      "difficulty": "medium",
+      "expected_tool": "get_health_overview",
+      "expected_args": {
+        "site_name": "Francfort DC"
+      },
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": "Francfort"
+      },
+      "expected_second_tool": "get_site_summary",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.0
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Francfort\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_05",
+      "question": "We're getting user complaints across multiple sites. Can you do a full health assessment, check the worst applications, and identify any anomalies?",
+      "workflow": "health_triage",
+      "difficulty": "hard",
+      "expected_tool": "get_health_overview",
+      "expected_args": {},
+      "predicted_tool": "get_health_overview",
+      "predicted_args": {},
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_health_overview\", \"arguments\": {}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_06",
+      "question": "Show me DNS errors.",
+      "workflow": "dns_investigation",
+      "difficulty": "easy",
+      "expected_tool": "get_errors",
+      "expected_args": {
+        "application": "DNS"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_07",
+      "question": "Why is DNS failing? What's the error rate?",
+      "workflow": "dns_investigation",
+      "difficulty": "medium",
+      "expected_tool": "get_application_summary",
+      "expected_args": {
+        "application": "DNS"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.25
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_08",
+      "question": "Are there DNS anomalies in the last 4 hours?",
+      "workflow": "dns_investigation",
+      "difficulty": "medium",
+      "expected_tool": "get_anomalies",
+      "expected_args": {
+        "application": "DNS",
+        "hours": 4
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 0.5,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.7250000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_09",
+      "question": "Check DNS queries from 10.0.3.20 to 8.8.8.8 \u2014 are they all failing?",
+      "workflow": "dns_investigation",
+      "difficulty": "hard",
+      "expected_tool": "get_dns_queries",
+      "expected_args": {
+        "client_ip": "10.0.3.20",
+        "server_ip": "8.8.8.8"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_flow_details",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_10",
+      "question": "I suspect external DNS is blocked. Investigate DNS failures to 8.8.8.8, identify all affected clients, and check if the internal DNS server 10.0.2.100 is being overloaded as a result.",
+      "workflow": "dns_investigation",
+      "difficulty": "hard",
+      "expected_tool": "get_errors",
+      "expected_args": {
+        "application": "DNS"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_11",
+      "question": "The Prague office reports DNS is broken. Check DNS from 10.1.6.10 to 8.8.8.8 and then check if the internal DNS server is healthy for that client.",
+      "workflow": "dns_investigation",
+      "difficulty": "hard",
+      "expected_tool": "get_dns_queries",
+      "expected_args": {
+        "client_ip": "10.1.6.10",
+        "server_ip": "8.8.8.8"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_12",
+      "question": "How is the Francfort DC site performing?",
+      "workflow": "site_performance",
+      "difficulty": "easy",
+      "expected_tool": "get_site_summary",
+      "expected_args": {
+        "site_name": "Francfort DC"
+      },
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": "Francfort"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.6000000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Francfort\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_13",
+      "question": "What is the health of the Prague site?",
+      "workflow": "site_performance",
+      "difficulty": "easy",
+      "expected_tool": "get_site_summary",
+      "expected_args": {
+        "site_name": "Prague"
+      },
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": "Prague"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Prague\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_14",
+      "question": "Compare network performance between Paris and London sites.",
+      "workflow": "site_performance",
+      "difficulty": "medium",
+      "expected_tool": "get_site_summary",
+      "expected_args": {
+        "site_name": "Paris"
+      },
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": "Paris"
+      },
+      "expected_second_tool": "get_site_summary",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Paris\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_15",
+      "question": "Which site has the worst application performance? Check all spoke sites.",
+      "workflow": "site_performance",
+      "difficulty": "medium",
+      "expected_tool": "get_health_overview",
+      "expected_args": {},
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": null
+      },
+      "expected_second_tool": "get_site_summary",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": null}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_16",
+      "question": "Madrid users report slow page loads. Investigate the Web Store performance at the Madrid site, check latency percentiles, and trace the path back to the Francfort DC hub.",
+      "workflow": "site_performance",
+      "difficulty": "hard",
+      "expected_tool": "get_site_summary",
+      "expected_args": {
+        "site_name": "Madrid"
+      },
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": "Madrid"
+      },
+      "expected_second_tool": "get_performance_metrics",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Madrid\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_17",
+      "question": "What are the latency percentiles for the Web Store?",
+      "workflow": "app_performance",
+      "difficulty": "easy",
+      "expected_tool": "get_performance_metrics",
+      "expected_args": {
+        "application": "Web Store"
+      },
+      "predicted_tool": "get_performance_metrics",
+      "predicted_args": {
+        "application": "Web Store"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_performance_metrics\", \"arguments\": {\"application\": \"Web Store\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_18",
+      "question": "How is Shop Backend API performing? Any latency issues?",
+      "workflow": "app_performance",
+      "difficulty": "medium",
+      "expected_tool": "get_performance_metrics",
+      "expected_args": {
+        "application": "Shop Backend API"
+      },
+      "predicted_tool": "get_application_summary",
+      "predicted_args": {
+        "application_name": "Shop Backend API"
+      },
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.0
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application_name\": \"Shop Backend API\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_19",
+      "question": "Check the TCP connection health for the Web Store application.",
+      "workflow": "app_performance",
+      "difficulty": "medium",
+      "expected_tool": "get_connection_health",
+      "expected_args": {
+        "application": "Web Store"
+      },
+      "predicted_tool": "get_application_summary",
+      "predicted_args": {
+        "application_name": "Web Store"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application_name\": \"Web Store\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_20",
+      "question": "The Web Store feels slow. Check its latency distribution, then look at TCP connection health, and see if the Shop Backend API might be the bottleneck.",
+      "workflow": "app_performance",
+      "difficulty": "hard",
+      "expected_tool": "get_performance_metrics",
+      "expected_args": {
+        "application": "Web Store"
+      },
+      "predicted_tool": "get_performance_metrics",
+      "predicted_args": {
+        "application": "Web Store"
+      },
+      "expected_second_tool": "get_connection_health",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_performance_metrics\", \"arguments\": {\"application\": \"Web Store\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_21",
+      "question": "Shop Backend API has occasional 1200ms spikes. Investigate the root cause \u2014 check API performance, then MySQL, then trace the session between the API server and database.",
+      "workflow": "app_performance",
+      "difficulty": "hard",
+      "expected_tool": "get_performance_metrics",
+      "expected_args": {
+        "application": "Shop Backend API"
+      },
+      "predicted_tool": "get_performance_metrics",
+      "predicted_args": {
+        "application": "Shop Backend API"
+      },
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_performance_metrics\", \"arguments\": {\"application\": \"Shop Backend API\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_22",
+      "question": "What is host 10.0.4.12 doing on the network?",
+      "workflow": "host_investigation",
+      "difficulty": "easy",
+      "expected_tool": "get_client_activity_summary",
+      "expected_args": {
+        "client_ip": "10.0.4.12"
+      },
+      "predicted_tool": "get_host_activity_summary",
+      "predicted_args": {
+        "client_ip": "10.0.4.12"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_host_activity_summary\", \"arguments\": {\"client_ip\": \"10.0.4.12\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_23",
+      "question": "Show me all connections for server 10.0.5.20.",
+      "workflow": "host_investigation",
+      "difficulty": "medium",
+      "expected_tool": "get_server_activity_summary",
+      "expected_args": {
+        "server_ip": "10.0.5.20"
+      },
+      "predicted_tool": "get_server_connections",
+      "predicted_args": {
+        "server_ip": "10.0.5.20"
+      },
+      "expected_second_tool": "get_host_connections",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_server_connections\", \"arguments\": {\"server_ip\": \"10.0.5.20\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_24",
+      "question": "What clients are connecting to the internal DNS server 10.0.2.100?",
+      "workflow": "host_investigation",
+      "difficulty": "medium",
+      "expected_tool": "get_server_activity_summary",
+      "expected_args": {
+        "server_ip": "10.0.2.100"
+      },
+      "predicted_tool": "get_server_activity",
+      "predicted_args": {
+        "server_ip": "10.0.2.100"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_server_activity\", \"arguments\": {\"server_ip\": \"10.0.2.100\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_25",
+      "question": "Host 10.0.3.20 is reporting issues. Check what it's doing, its DNS queries, and whether it can reach the external DNS server.",
+      "workflow": "host_investigation",
+      "difficulty": "hard",
+      "expected_tool": "get_client_activity_summary",
+      "expected_args": {
+        "client_ip": "10.0.3.20"
+      },
+      "predicted_tool": "get_client_activity_summary",
+      "predicted_args": {
+        "client_ip": "10.0.3.20"
+      },
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_client_activity_summary\", \"arguments\": {\"client_ip\": \"10.0.3.20\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_26",
+      "question": "Investigate 10.1.6.10 \u2014 it's the only host in the Prague site. Check all its activity, DNS failures, NTP issues, and topology connections.",
+      "workflow": "host_investigation",
+      "difficulty": "hard",
+      "expected_tool": "get_client_activity_summary",
+      "expected_args": {
+        "client_ip": "10.1.6.10"
+      },
+      "predicted_tool": "get_host_details",
+      "predicted_args": {
+        "host_ip": "10.1.6.10"
+      },
+      "expected_second_tool": "get_host_connections",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_host_details\", \"arguments\": {\"host_ip\": \"10.1.6.10\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_27",
+      "question": "Find the network path from 10.1.1.10 to the MySQL server 10.0.5.20.",
+      "workflow": "cross_site_path",
+      "difficulty": "easy",
+      "expected_tool": "find_shortest_path",
+      "expected_args": {
+        "from_ip": "10.1.1.10",
+        "to_ip": "10.0.5.20"
+      },
+      "predicted_tool": "get_path",
+      "predicted_args": {
+        "client_ip": "10.1.1.10",
+        "server_ip": "10.0.5.20"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_path\", \"arguments\": {\"client_ip\": \"10.1.1.10\", \"server_ip\": \"10.0.5.20\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_28",
+      "question": "How does traffic flow from the Athens site to the Francfort DC hub? Show the path and latency.",
+      "workflow": "cross_site_path",
+      "difficulty": "medium",
+      "expected_tool": "get_topology_by_site",
+      "expected_args": {
+        "site_name": "Athens"
+      },
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": "Athens"
+      },
+      "expected_second_tool": "find_shortest_path",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Athens\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_29",
+      "question": "Trace the full path from a Prague client 10.1.6.10 to the DNS server 10.0.2.100, show each hop, and check if there are latency issues at any hop.",
+      "workflow": "cross_site_path",
+      "difficulty": "hard",
+      "expected_tool": "find_shortest_path",
+      "expected_args": {
+        "from_ip": "10.1.6.10",
+        "to_ip": "10.0.2.100"
+      },
+      "predicted_tool": "get_path",
+      "predicted_args": {
+        "client_ip": "10.1.6.10",
+        "server_ip": "10.0.2.100",
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_session_hop_analysis",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_path\", \"arguments\": {\"client_ip\": \"10.1.6.10\", \"server_ip\": \"10.0.2.100\", \"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_30",
+      "question": "A user in Vienna complains about slow Web Store. Trace the full path from Vienna through the WAN to the web server, check latency at each segment, and identify the bottleneck.",
+      "workflow": "cross_site_path",
+      "difficulty": "hard",
+      "expected_tool": "get_topology_by_site",
+      "expected_args": {
+        "site_name": "Vienna"
+      },
+      "predicted_tool": "get_site_summary",
+      "predicted_args": {
+        "site_name": "Vienna"
+      },
+      "expected_second_tool": "find_shortest_path",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Vienna\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_31",
+      "question": "Who are the top talkers on the network?",
+      "workflow": "bandwidth_analysis",
+      "difficulty": "easy",
+      "expected_tool": "get_top_talkers",
+      "expected_args": {},
+      "predicted_tool": "get_top_talkers",
+      "predicted_args": {
+        "limit": 10
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_top_talkers\", \"arguments\": {\"limit\": 10}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_32",
+      "question": "Show me the overall traffic overview.",
+      "workflow": "bandwidth_analysis",
+      "difficulty": "easy",
+      "expected_tool": "get_traffic_overview",
+      "expected_args": {},
+      "predicted_tool": "get_traffic_overview",
+      "predicted_args": {},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_traffic_overview\", \"arguments\": {}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_33",
+      "question": "Host 10.0.4.12 seems to be consuming a lot of bandwidth. What's it downloading?",
+      "workflow": "bandwidth_analysis",
+      "difficulty": "medium",
+      "expected_tool": "get_flow_summary",
+      "expected_args": {
+        "client_ip": "10.0.4.12"
+      },
+      "predicted_tool": "get_flow_records",
+      "predicted_args": {
+        "page": 1,
+        "page_size": 10,
+        "client_ip": "10.0.4.12"
+      },
+      "expected_second_tool": "get_flow_details",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_flow_records\", \"arguments\": {\"page\": 1, \"page_size\": 10, \"client_ip\": \"10.0.4.12\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_34",
+      "question": "What's the traffic breakdown between 10.0.4.12 and Fastly CDN 151.101.2.132?",
+      "workflow": "bandwidth_analysis",
+      "difficulty": "medium",
+      "expected_tool": "get_flow_details",
+      "expected_args": {
+        "client_ip": "10.0.4.12",
+        "server_ip": "151.101.2.132"
+      },
+      "predicted_tool": "get_flow_details",
+      "predicted_args": {
+        "client_ip": "10.0.4.12",
+        "server_ip": "151.101.2.132"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_flow_details\", \"arguments\": {\"client_ip\": \"10.0.4.12\", \"server_ip\": \"151.101.2.132\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_35",
+      "question": "Investigate the bandwidth skew: 10.0.4.12 is downloading 57MB from Fastly CDN. Check the flows, find out which application is responsible, compare with other hosts hitting the same CDN, and determine if this is normal.",
+      "workflow": "bandwidth_analysis",
+      "difficulty": "hard",
+      "expected_tool": "get_flow_details",
+      "expected_args": {
+        "client_ip": "10.0.4.12",
+        "server_ip": "151.101.2.132"
+      },
+      "predicted_tool": "get_flow_records",
+      "predicted_args": {
+        "page": 1,
+        "limit": 10,
+        "client_ip": "10.0.4.12"
+      },
+      "expected_second_tool": "get_top_talkers",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.5,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.325
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_flow_records\", \"arguments\": {\"page\": 1, \"limit\": 10, \"client_ip\": \"10.0.4.12\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_36",
+      "question": "Check MySQL application performance.",
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "easy",
+      "expected_tool": "get_application_summary",
+      "expected_args": {
+        "application": "MYSQL"
+      },
+      "predicted_tool": "get_application_summary",
+      "predicted_args": {
+        "application": "MYSQL"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application\": \"MYSQL\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_37",
+      "question": "Are there slow MySQL queries? Check transactions over 500ms.",
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "medium",
+      "expected_tool": "get_slow_transactions",
+      "expected_args": {
+        "application": "MYSQL",
+        "threshold_ms": 500
+      },
+      "predicted_tool": "get_slow_transactions",
+      "predicted_args": {
+        "threshold_ms": 500
+      },
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 0.5,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.525
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_slow_transactions\", \"arguments\": {\"threshold_ms\": 500}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_38",
+      "question": "Check MySQL latency from app server 10.0.4.10 to database 10.0.5.20.",
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "medium",
+      "expected_tool": "get_flow_details",
+      "expected_args": {
+        "client_ip": "10.0.4.10",
+        "server_ip": "10.0.5.20",
+        "application": "MYSQL"
+      },
+      "predicted_tool": "get_application_summary",
+      "predicted_args": {
+        "application": "MYSQL"
+      },
+      "expected_second_tool": "get_performance_metrics",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.3333333333333333,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2833333333333333
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application\": \"MYSQL\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_39",
+      "question": "MySQL average looks fine at 8ms but users report slow responses. Investigate tail latency, find the slow endpoints, and trace the session between 10.0.4.10 and 10.0.5.20 on port 3306.",
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "hard",
+      "expected_tool": "get_performance_metrics",
+      "expected_args": {
+        "application": "MYSQL"
+      },
+      "predicted_tool": "get_performance_metrics",
+      "predicted_args": {
+        "application": "MYSQL"
+      },
+      "expected_second_tool": "get_slow_transactions",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_performance_metrics\", \"arguments\": {\"application\": \"MYSQL\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_40",
+      "question": "All three app servers 10.0.4.10, 10.0.4.11, and 10.0.4.12 are hitting MySQL at ~1100ms. Is this a server-side issue? Check the session hops and identify where the delay is introduced.",
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "hard",
+      "expected_tool": "get_anomalies",
+      "expected_args": {
+        "application": "MYSQL"
+      },
+      "predicted_tool": "get_application_summary",
+      "predicted_args": {
+        "application": "MYSQL"
+      },
+      "expected_second_tool": "get_session_hop_analysis",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application\": \"MYSQL\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_41",
+      "question": "Are there any anomalies on the network?",
+      "workflow": "security_scan",
+      "difficulty": "easy",
+      "expected_tool": "get_anomalies",
+      "expected_args": {},
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "all"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"all\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_42",
+      "question": "Check for DNS anomalies \u2014 any DGA-like domains or unusual patterns?",
+      "workflow": "security_scan",
+      "difficulty": "medium",
+      "expected_tool": "get_anomalies",
+      "expected_args": {
+        "application": "DNS"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_43",
+      "question": "Are there any hosts connecting to unusual external IPs or using unexpected ports?",
+      "workflow": "security_scan",
+      "difficulty": "medium",
+      "expected_tool": "get_anomalies",
+      "expected_args": {},
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "all"
+      },
+      "expected_second_tool": "get_top_talkers",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"all\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_44",
+      "question": "Run a security audit: check for high error rates that could indicate scanning, look for DGA domains in DNS, check for unusual port usage, and identify any hosts with anomalous connection patterns.",
+      "workflow": "security_scan",
+      "difficulty": "hard",
+      "expected_tool": "get_anomalies",
+      "expected_args": {},
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "all"
+      },
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"all\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_45",
+      "question": "10.0.4.12 has a 57MB download from 151.101.2.132 on port 443. Is this data exfiltration? Investigate the traffic patterns, check the host's other connections, and look for anything suspicious.",
+      "workflow": "security_scan",
+      "difficulty": "hard",
+      "expected_tool": "get_flow_details",
+      "expected_args": {
+        "client_ip": "10.0.4.12",
+        "server_ip": "151.101.2.132"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "host_ip": "10.0.4.12"
+      },
+      "expected_second_tool": "get_host_connections",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.2
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"host_ip\": \"10.0.4.12\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_46",
+      "question": "Check SSH performance across all sites.",
+      "workflow": "wrong_path_recovery",
+      "difficulty": "medium",
+      "expected_tool": "get_performance_metrics",
+      "expected_args": {
+        "application": "SSH"
+      },
+      "predicted_tool": "get_performance_metrics",
+      "predicted_args": {
+        "application": "SSH"
+      },
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.65
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_performance_metrics\", \"arguments\": {\"application\": \"SSH\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_47",
+      "question": "Show me the NTP topology.",
+      "workflow": "wrong_path_recovery",
+      "difficulty": "medium",
+      "expected_tool": "get_topology_by_application",
+      "expected_args": {
+        "application": "NTP"
+      },
+      "predicted_tool": "get_topology",
+      "predicted_args": {
+        "application": "NTP"
+      },
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.45
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_topology\", \"arguments\": {\"application\": \"NTP\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_48",
+      "question": "Something is wrong with Prague. I think it's a MySQL issue \u2014 check MySQL for Prague.",
+      "workflow": "wrong_path_recovery",
+      "difficulty": "hard",
+      "expected_tool": "get_site_summary",
+      "expected_args": {
+        "site_name": "Prague"
+      },
+      "predicted_tool": "get_application_summary",
+      "predicted_args": {
+        "application": "MYSQL"
+      },
+      "expected_second_tool": "get_client_activity_summary",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 0.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.0
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application\": \"MYSQL\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_49",
+      "question": "DNS is fine, right? The 20% error rate is probably normal. Just confirm everything is OK.",
+      "workflow": "wrong_path_recovery",
+      "difficulty": "hard",
+      "expected_tool": "get_application_summary",
+      "expected_args": {
+        "application": "DNS"
+      },
+      "predicted_tool": "get_anomalies",
+      "predicted_args": {
+        "application": "DNS"
+      },
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "scores": {
+        "tool_selection": 0.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 0.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.25
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call><|im_end|>"
+    },
+    {
+      "id": "benchmark_50",
+      "question": "Users say the network is slow but I think it's just their local WiFi. Can you prove the network is fine? Check everything.",
+      "workflow": "wrong_path_recovery",
+      "difficulty": "hard",
+      "expected_tool": "get_health_overview",
+      "expected_args": {},
+      "predicted_tool": "get_health_overview",
+      "predicted_args": {},
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 3,
+      "scores": {
+        "tool_selection": 1.0,
+        "argument_accuracy": 1.0,
+        "chain_continuation": 1.0,
+        "reasoning_relevance": 0.0,
+        "composite": 0.8500000000000001
+      },
+      "raw_response_preview": "<tool_call>{\"name\": \"get_health_overview\", \"arguments\": {}}</tool_call><|im_end|>"
+    }
+  ]
+}
