@@ -1,0 +1,506 @@
+{
+  "version": "1.0",
+  "description": "50 canonical benchmark questions for Omnis SFT evaluation",
+  "questions": [
+    {
+      "id": "benchmark_01",
+      "question": "How is the network doing?",
+      "expected_first_tool": "get_health_overview",
+      "expected_first_args": {},
+      "expected_second_tool": "get_application_summary",
+      "min_chain_length": 2,
+      "workflow": "health_triage",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_02",
+      "question": "Give me an overview of the network health for the last 6 hours.",
+      "expected_first_tool": "get_health_overview",
+      "expected_first_args": {"hours": 6},
+      "expected_second_tool": "get_application_summary",
+      "min_chain_length": 2,
+      "workflow": "health_triage",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_03",
+      "question": "Which applications have the highest error rates right now?",
+      "expected_first_tool": "get_health_overview",
+      "expected_first_args": {},
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "workflow": "health_triage",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_04",
+      "question": "Is the Francfort DC site healthy? Check all applications there.",
+      "expected_first_tool": "get_health_overview",
+      "expected_first_args": {"site_name": "Francfort DC"},
+      "expected_second_tool": "get_site_summary",
+      "min_chain_length": 2,
+      "workflow": "health_triage",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_05",
+      "question": "We're getting user complaints across multiple sites. Can you do a full health assessment, check the worst applications, and identify any anomalies?",
+      "expected_first_tool": "get_health_overview",
+      "expected_first_args": {},
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 3,
+      "workflow": "health_triage",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_06",
+      "question": "Show me DNS errors.",
+      "expected_first_tool": "get_errors",
+      "expected_first_args": {"application": "DNS"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "dns_investigation",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_07",
+      "question": "Why is DNS failing? What's the error rate?",
+      "expected_first_tool": "get_application_summary",
+      "expected_first_args": {"application": "DNS"},
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "workflow": "dns_investigation",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_08",
+      "question": "Are there DNS anomalies in the last 4 hours?",
+      "expected_first_tool": "get_anomalies",
+      "expected_first_args": {"application": "DNS", "hours": 4},
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 2,
+      "workflow": "dns_investigation",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_09",
+      "question": "Check DNS queries from 10.0.3.20 to 8.8.8.8 — are they all failing?",
+      "expected_first_tool": "get_dns_queries",
+      "expected_first_args": {"client_ip": "10.0.3.20", "server_ip": "8.8.8.8"},
+      "expected_second_tool": "get_flow_details",
+      "min_chain_length": 2,
+      "workflow": "dns_investigation",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_10",
+      "question": "I suspect external DNS is blocked. Investigate DNS failures to 8.8.8.8, identify all affected clients, and check if the internal DNS server 10.0.2.100 is being overloaded as a result.",
+      "expected_first_tool": "get_errors",
+      "expected_first_args": {"application": "DNS"},
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 3,
+      "workflow": "dns_investigation",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_11",
+      "question": "The Prague office reports DNS is broken. Check DNS from 10.1.6.10 to 8.8.8.8 and then check if the internal DNS server is healthy for that client.",
+      "expected_first_tool": "get_dns_queries",
+      "expected_first_args": {"client_ip": "10.1.6.10", "server_ip": "8.8.8.8"},
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 3,
+      "workflow": "dns_investigation",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_12",
+      "question": "How is the Francfort DC site performing?",
+      "expected_first_tool": "get_site_summary",
+      "expected_first_args": {"site_name": "Francfort DC"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "site_performance",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_13",
+      "question": "What is the health of the Prague site?",
+      "expected_first_tool": "get_site_summary",
+      "expected_first_args": {"site_name": "Prague"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "site_performance",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_14",
+      "question": "Compare network performance between Paris and London sites.",
+      "expected_first_tool": "get_site_summary",
+      "expected_first_args": {"site_name": "Paris"},
+      "expected_second_tool": "get_site_summary",
+      "min_chain_length": 2,
+      "workflow": "site_performance",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_15",
+      "question": "Which site has the worst application performance? Check all spoke sites.",
+      "expected_first_tool": "get_health_overview",
+      "expected_first_args": {},
+      "expected_second_tool": "get_site_summary",
+      "min_chain_length": 2,
+      "workflow": "site_performance",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_16",
+      "question": "Madrid users report slow page loads. Investigate the Web Store performance at the Madrid site, check latency percentiles, and trace the path back to the Francfort DC hub.",
+      "expected_first_tool": "get_site_summary",
+      "expected_first_args": {"site_name": "Madrid"},
+      "expected_second_tool": "get_performance_metrics",
+      "min_chain_length": 3,
+      "workflow": "site_performance",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_17",
+      "question": "What are the latency percentiles for the Web Store?",
+      "expected_first_tool": "get_performance_metrics",
+      "expected_first_args": {"application": "Web Store"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "app_performance",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_18",
+      "question": "How is Shop Backend API performing? Any latency issues?",
+      "expected_first_tool": "get_performance_metrics",
+      "expected_first_args": {"application": "Shop Backend API"},
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 2,
+      "workflow": "app_performance",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_19",
+      "question": "Check the TCP connection health for the Web Store application.",
+      "expected_first_tool": "get_connection_health",
+      "expected_first_args": {"application": "Web Store"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "app_performance",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_20",
+      "question": "The Web Store feels slow. Check its latency distribution, then look at TCP connection health, and see if the Shop Backend API might be the bottleneck.",
+      "expected_first_tool": "get_performance_metrics",
+      "expected_first_args": {"application": "Web Store"},
+      "expected_second_tool": "get_connection_health",
+      "min_chain_length": 3,
+      "workflow": "app_performance",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_21",
+      "question": "Shop Backend API has occasional 1200ms spikes. Investigate the root cause — check API performance, then MySQL, then trace the session between the API server and database.",
+      "expected_first_tool": "get_performance_metrics",
+      "expected_first_args": {"application": "Shop Backend API"},
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 3,
+      "workflow": "app_performance",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_22",
+      "question": "What is host 10.0.4.12 doing on the network?",
+      "expected_first_tool": "get_client_activity_summary",
+      "expected_first_args": {"client_ip": "10.0.4.12"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "host_investigation",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_23",
+      "question": "Show me all connections for server 10.0.5.20.",
+      "expected_first_tool": "get_server_activity_summary",
+      "expected_first_args": {"server_ip": "10.0.5.20"},
+      "expected_second_tool": "get_host_connections",
+      "min_chain_length": 2,
+      "workflow": "host_investigation",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_24",
+      "question": "What clients are connecting to the internal DNS server 10.0.2.100?",
+      "expected_first_tool": "get_server_activity_summary",
+      "expected_first_args": {"server_ip": "10.0.2.100"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "host_investigation",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_25",
+      "question": "Host 10.0.3.20 is reporting issues. Check what it's doing, its DNS queries, and whether it can reach the external DNS server.",
+      "expected_first_tool": "get_client_activity_summary",
+      "expected_first_args": {"client_ip": "10.0.3.20"},
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 3,
+      "workflow": "host_investigation",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_26",
+      "question": "Investigate 10.1.6.10 — it's the only host in the Prague site. Check all its activity, DNS failures, NTP issues, and topology connections.",
+      "expected_first_tool": "get_client_activity_summary",
+      "expected_first_args": {"client_ip": "10.1.6.10"},
+      "expected_second_tool": "get_host_connections",
+      "min_chain_length": 3,
+      "workflow": "host_investigation",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_27",
+      "question": "Find the network path from 10.1.1.10 to the MySQL server 10.0.5.20.",
+      "expected_first_tool": "find_shortest_path",
+      "expected_first_args": {"from_ip": "10.1.1.10", "to_ip": "10.0.5.20"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "cross_site_path",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_28",
+      "question": "How does traffic flow from the Athens site to the Francfort DC hub? Show the path and latency.",
+      "expected_first_tool": "get_topology_by_site",
+      "expected_first_args": {"site_name": "Athens"},
+      "expected_second_tool": "find_shortest_path",
+      "min_chain_length": 2,
+      "workflow": "cross_site_path",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_29",
+      "question": "Trace the full path from a Prague client 10.1.6.10 to the DNS server 10.0.2.100, show each hop, and check if there are latency issues at any hop.",
+      "expected_first_tool": "find_shortest_path",
+      "expected_first_args": {"from_ip": "10.1.6.10", "to_ip": "10.0.2.100"},
+      "expected_second_tool": "get_session_hop_analysis",
+      "min_chain_length": 2,
+      "workflow": "cross_site_path",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_30",
+      "question": "A user in Vienna complains about slow Web Store. Trace the full path from Vienna through the WAN to the web server, check latency at each segment, and identify the bottleneck.",
+      "expected_first_tool": "get_topology_by_site",
+      "expected_first_args": {"site_name": "Vienna"},
+      "expected_second_tool": "find_shortest_path",
+      "min_chain_length": 3,
+      "workflow": "cross_site_path",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_31",
+      "question": "Who are the top talkers on the network?",
+      "expected_first_tool": "get_top_talkers",
+      "expected_first_args": {},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "bandwidth_analysis",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_32",
+      "question": "Show me the overall traffic overview.",
+      "expected_first_tool": "get_traffic_overview",
+      "expected_first_args": {},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "bandwidth_analysis",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_33",
+      "question": "Host 10.0.4.12 seems to be consuming a lot of bandwidth. What's it downloading?",
+      "expected_first_tool": "get_flow_summary",
+      "expected_first_args": {"client_ip": "10.0.4.12"},
+      "expected_second_tool": "get_flow_details",
+      "min_chain_length": 2,
+      "workflow": "bandwidth_analysis",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_34",
+      "question": "What's the traffic breakdown between 10.0.4.12 and Fastly CDN 151.101.2.132?",
+      "expected_first_tool": "get_flow_details",
+      "expected_first_args": {"client_ip": "10.0.4.12", "server_ip": "151.101.2.132"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "bandwidth_analysis",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_35",
+      "question": "Investigate the bandwidth skew: 10.0.4.12 is downloading 57MB from Fastly CDN. Check the flows, find out which application is responsible, compare with other hosts hitting the same CDN, and determine if this is normal.",
+      "expected_first_tool": "get_flow_details",
+      "expected_first_args": {"client_ip": "10.0.4.12", "server_ip": "151.101.2.132"},
+      "expected_second_tool": "get_top_talkers",
+      "min_chain_length": 3,
+      "workflow": "bandwidth_analysis",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_36",
+      "question": "Check MySQL application performance.",
+      "expected_first_tool": "get_application_summary",
+      "expected_first_args": {"application": "MYSQL"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_37",
+      "question": "Are there slow MySQL queries? Check transactions over 500ms.",
+      "expected_first_tool": "get_slow_transactions",
+      "expected_first_args": {"application": "MYSQL", "threshold_ms": 500},
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 2,
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_38",
+      "question": "Check MySQL latency from app server 10.0.4.10 to database 10.0.5.20.",
+      "expected_first_tool": "get_flow_details",
+      "expected_first_args": {"client_ip": "10.0.4.10", "server_ip": "10.0.5.20", "application": "MYSQL"},
+      "expected_second_tool": "get_performance_metrics",
+      "min_chain_length": 2,
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_39",
+      "question": "MySQL average looks fine at 8ms but users report slow responses. Investigate tail latency, find the slow endpoints, and trace the session between 10.0.4.10 and 10.0.5.20 on port 3306.",
+      "expected_first_tool": "get_performance_metrics",
+      "expected_first_args": {"application": "MYSQL"},
+      "expected_second_tool": "get_slow_transactions",
+      "min_chain_length": 3,
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_40",
+      "question": "All three app servers 10.0.4.10, 10.0.4.11, and 10.0.4.12 are hitting MySQL at ~1100ms. Is this a server-side issue? Check the session hops and identify where the delay is introduced.",
+      "expected_first_tool": "get_anomalies",
+      "expected_first_args": {"application": "MYSQL"},
+      "expected_second_tool": "get_session_hop_analysis",
+      "min_chain_length": 3,
+      "workflow": "mysql_troubleshooting",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_41",
+      "question": "Are there any anomalies on the network?",
+      "expected_first_tool": "get_anomalies",
+      "expected_first_args": {},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "security_scan",
+      "difficulty": "easy"
+    },
+    {
+      "id": "benchmark_42",
+      "question": "Check for DNS anomalies — any DGA-like domains or unusual patterns?",
+      "expected_first_tool": "get_anomalies",
+      "expected_first_args": {"application": "DNS"},
+      "expected_second_tool": "get_dns_queries",
+      "min_chain_length": 2,
+      "workflow": "security_scan",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_43",
+      "question": "Are there any hosts connecting to unusual external IPs or using unexpected ports?",
+      "expected_first_tool": "get_anomalies",
+      "expected_first_args": {},
+      "expected_second_tool": "get_top_talkers",
+      "min_chain_length": 2,
+      "workflow": "security_scan",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_44",
+      "question": "Run a security audit: check for high error rates that could indicate scanning, look for DGA domains in DNS, check for unusual port usage, and identify any hosts with anomalous connection patterns.",
+      "expected_first_tool": "get_anomalies",
+      "expected_first_args": {},
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 3,
+      "workflow": "security_scan",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_45",
+      "question": "10.0.4.12 has a 57MB download from 151.101.2.132 on port 443. Is this data exfiltration? Investigate the traffic patterns, check the host's other connections, and look for anything suspicious.",
+      "expected_first_tool": "get_flow_details",
+      "expected_first_args": {"client_ip": "10.0.4.12", "server_ip": "151.101.2.132"},
+      "expected_second_tool": "get_host_connections",
+      "min_chain_length": 3,
+      "workflow": "security_scan",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_46",
+      "question": "Check SSH performance across all sites.",
+      "expected_first_tool": "get_performance_metrics",
+      "expected_first_args": {"application": "SSH"},
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "workflow": "wrong_path_recovery",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_47",
+      "question": "Show me the NTP topology.",
+      "expected_first_tool": "get_topology_by_application",
+      "expected_first_args": {"application": "NTP"},
+      "expected_second_tool": null,
+      "min_chain_length": 1,
+      "workflow": "wrong_path_recovery",
+      "difficulty": "medium"
+    },
+    {
+      "id": "benchmark_48",
+      "question": "Something is wrong with Prague. I think it's a MySQL issue — check MySQL for Prague.",
+      "expected_first_tool": "get_site_summary",
+      "expected_first_args": {"site_name": "Prague"},
+      "expected_second_tool": "get_client_activity_summary",
+      "min_chain_length": 2,
+      "workflow": "wrong_path_recovery",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_49",
+      "question": "DNS is fine, right? The 20% error rate is probably normal. Just confirm everything is OK.",
+      "expected_first_tool": "get_application_summary",
+      "expected_first_args": {"application": "DNS"},
+      "expected_second_tool": "get_errors",
+      "min_chain_length": 2,
+      "workflow": "wrong_path_recovery",
+      "difficulty": "hard"
+    },
+    {
+      "id": "benchmark_50",
+      "question": "Users say the network is slow but I think it's just their local WiFi. Can you prove the network is fine? Check everything.",
+      "expected_first_tool": "get_health_overview",
+      "expected_first_args": {},
+      "expected_second_tool": "get_anomalies",
+      "min_chain_length": 3,
+      "workflow": "wrong_path_recovery",
+      "difficulty": "hard"
+    }
+  ]
+}
