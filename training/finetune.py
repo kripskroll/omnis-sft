@@ -20,11 +20,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from unsloth import FastLanguageModel  # must be imported before transformers/trl/peft
 import torch
 from datasets import Dataset
 from transformers import TrainingArguments
 from trl import SFTTrainer
-from unsloth import FastLanguageModel
 
 logger = logging.getLogger(__name__)
 
@@ -241,10 +241,8 @@ def build_trainer(
 
     trainer = SFTTrainer(
         model=model,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         train_dataset=dataset,
-        dataset_text_field="text",
-        max_seq_length=config["max_seq_length"],
         args=training_args,
     )
     return trainer
