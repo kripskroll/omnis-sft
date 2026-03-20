@@ -1,0 +1,27 @@
+[project]
+name = "omnis-sft"
+version = "0.1.0"
+description = "Fine-tune Qwen 2.5 7B for autonomous network diagnostics using Omnis MCP tools"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.40.0",
+]
+
+[project.optional-dependencies]
+training = [
+    "unsloth",
+    "torch",
+    "transformers",
+    "datasets",
+    "peft",
+    "trl",
+    "bitsandbytes",
+]
+eval = [
+    "vllm",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

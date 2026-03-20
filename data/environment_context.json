@@ -1,0 +1,464 @@
+{
+  "metadata": {
+    "snapshot_date": "2026-03-20",
+    "source": "Omnis MCP (ChatDPI/OmnisLLM @ 10.149.9.4)",
+    "purpose": "Ground truth for synthetic training data generation — ensures generated tool responses match real-world patterns observed in the live Omnis environment",
+    "total_records": 37600,
+    "total_transactions": 1214467,
+    "total_errors": 97199,
+    "avg_response_time_ms": 33.6
+  },
+  "topology": {
+    "architecture": "Hub-and-spoke WAN",
+    "host_count": 171,
+    "edge_count": 640,
+    "sites": [
+      { "name": "Francfort DC", "role": "hub", "hosts": 16, "bandwidth_mbps": 10 },
+      { "name": "Athens", "role": "spoke", "hosts": 2, "bandwidth_mbps": 2 },
+      { "name": "Madrid", "role": "spoke", "hosts": 2, "bandwidth_mbps": 2 },
+      { "name": "Paris", "role": "spoke", "hosts": 2, "bandwidth_mbps": 1 },
+      { "name": "Vienna", "role": "spoke", "hosts": 2, "bandwidth_mbps": 2 },
+      { "name": "Zurich", "role": "spoke", "hosts": 2, "bandwidth_mbps": 5 },
+      { "name": "London", "role": "spoke", "hosts": 1, "bandwidth_mbps": 5 },
+      { "name": "Prague", "role": "spoke", "hosts": 1, "bandwidth_mbps": 1 }
+    ],
+    "communities": [
+      "Databases",
+      "Front End Load Balancer",
+      "Front-End Web",
+      "Middleware - API"
+    ],
+    "sensors": [
+      {
+        "name": "vstream-eve-ng:Remote sites",
+        "ip": "10.10.10.210",
+        "type": "vSTREAM",
+        "interfaces": 2
+      }
+    ]
+  },
+  "applications": [
+    {
+      "name": "DNS",
+      "records": 14546,
+      "transactions": 479492,
+      "errors": 97191,
+      "avg_response_time_ms": 2.8,
+      "error_rate_pct": 20.27
+    },
+    {
+      "name": "MYSQL",
+      "records": 2908,
+      "transactions": 446206,
+      "errors": 0,
+      "avg_response_time_ms": 8.1,
+      "error_rate_pct": 0.0
+    },
+    {
+      "name": "SSH",
+      "records": 3648,
+      "transactions": 152642,
+      "errors": 0,
+      "avg_response_time_ms": 92.8,
+      "error_rate_pct": 0.0
+    },
+    {
+      "name": "Web Store",
+      "records": 5138,
+      "transactions": 86198,
+      "errors": 8,
+      "avg_response_time_ms": 106.8,
+      "error_rate_pct": 0.009
+    },
+    {
+      "name": "Shop Backend API",
+      "records": 4104,
+      "transactions": 48253,
+      "errors": 0,
+      "avg_response_time_ms": 61.2,
+      "error_rate_pct": 0.0
+    },
+    {
+      "name": "NTP",
+      "records": 3397,
+      "transactions": 1676,
+      "errors": 0,
+      "avg_response_time_ms": 17.9,
+      "error_rate_pct": 0.0
+    },
+    {
+      "name": "DHCP",
+      "records": 681,
+      "transactions": 0,
+      "errors": 0,
+      "avg_response_time_ms": null,
+      "error_rate_pct": null
+    },
+    {
+      "name": "ICMP",
+      "records": 782,
+      "transactions": 0,
+      "errors": 0,
+      "avg_response_time_ms": null,
+      "error_rate_pct": null
+    },
+    {
+      "name": "Generic",
+      "records": 2394,
+      "transactions": 0,
+      "errors": 0,
+      "avg_response_time_ms": null,
+      "error_rate_pct": null
+    },
+    {
+      "name": "HTTPS",
+      "records": 1,
+      "transactions": 0,
+      "errors": 0,
+      "avg_response_time_ms": null,
+      "error_rate_pct": null
+    },
+    {
+      "name": "Technology",
+      "records": 1,
+      "transactions": 0,
+      "errors": 0,
+      "avg_response_time_ms": null,
+      "error_rate_pct": null
+    }
+  ],
+  "known_issues": [
+    {
+      "id": "DNS-EXT-BLOCK",
+      "severity": "critical",
+      "description": "100% DNS failure rate from web frontends and Prague to Google DNS 8.8.8.8 — likely firewall or routing block preventing external DNS resolution",
+      "affected_hosts": ["10.0.3.20", "10.0.3.21", "10.0.3.22", "10.1.6.10"],
+      "target": "8.8.8.8",
+      "evidence": {
+        "error_rate_pct": 100,
+        "total_failed_txn": 97133,
+        "breakdown": {
+          "10.0.3.22": 32209,
+          "10.0.3.20": 32007,
+          "10.0.3.21": 32204,
+          "10.1.6.10": 713
+        }
+      },
+      "likely_cause": "Firewall or routing policy blocking outbound DNS to 8.8.8.8 from 10.0.3.x and 10.1.6.x subnets"
+    },
+    {
+      "id": "DNS-INT-LATENCY",
+      "severity": "high",
+      "description": "Internal DNS server 10.0.2.100 showing 50-87ms latency spikes (up to 14x std dev) — likely caused by retry storms from blocked external DNS",
+      "affected_hosts": ["10.0.2.100"],
+      "evidence": {
+        "spike_from_10.0.4.10": { "latency_ms": 87, "std_dev_multiple": 14.2 },
+        "spike_from_10.1.1.10": { "latency_ms": 77, "std_dev_multiple": 12.5 },
+        "baseline_avg_ms": 2.8
+      },
+      "likely_cause": "DNS retry storms — clients failing to reach 8.8.8.8 fall back to internal server 10.0.2.100, overloading it"
+    },
+    {
+      "id": "MYSQL-SLOW-QUERY",
+      "severity": "high",
+      "description": "MySQL server 10.0.5.20 showing ~1100ms response times from app servers — hidden behind healthy 8.1ms aggregate average",
+      "affected_hosts": ["10.0.5.20", "10.0.4.10", "10.0.4.11", "10.0.4.12"],
+      "evidence": {
+        "spike_from_10.0.4.10": { "latency_ms": 1137, "std_dev_multiple": 24.0 },
+        "spike_from_10.0.4.11": { "latency_ms": 1124, "std_dev_multiple": 23.7 },
+        "spike_from_10.0.4.12": { "latency_ms": 1118, "std_dev_multiple": 23.6 },
+        "baseline_avg_ms": 8.1
+      },
+      "likely_cause": "Slow queries or lock contention on MySQL server 10.0.5.20 affecting all three app servers simultaneously"
+    },
+    {
+      "id": "WEBSTORE-WAN-LATENCY",
+      "severity": "medium",
+      "description": "Web Store P95/P99 latency worse for branch offices due to WAN distance from Francfort DC hub",
+      "affected_hosts": ["10.0.2.10"],
+      "evidence": {
+        "avg_response_time_ms": 106.8,
+        "error_rate_pct": 0.009
+      },
+      "likely_cause": "Geographic distance and limited WAN bandwidth (1-5 Mbps links) to spoke sites"
+    },
+    {
+      "id": "CDN-BANDWIDTH-SKEW",
+      "severity": "low",
+      "description": "Single host 10.0.4.12 consuming 57MB from Fastly CDN — dominant traffic pair in the environment",
+      "affected_hosts": ["10.0.4.12"],
+      "evidence": {
+        "total_bytes": "59.7 MB",
+        "server_to_client_bytes": "57 MB",
+        "destination": "151.101.2.132",
+        "port": 443
+      },
+      "likely_cause": "Large content downloads or cache misses from a single application server to Fastly CDN"
+    },
+    {
+      "id": "SHOP-API-SPIKES",
+      "severity": "medium",
+      "description": "Shop Backend API showing occasional spikes to 1200ms from web frontends — likely correlated with MySQL slow queries",
+      "affected_hosts": ["10.0.3.22", "10.0.4.10"],
+      "evidence": {
+        "spike_latency_ms": 1221,
+        "std_dev_multiple": 11.1,
+        "baseline_avg_ms": 61.2
+      },
+      "likely_cause": "Cascading latency from MySQL slow queries propagating through the Shop Backend API to web frontend clients"
+    }
+  ],
+  "key_hosts": {
+    "10.0.2.100": {
+      "role": "Internal DNS server",
+      "community": "Databases",
+      "notes": "Showing latency spikes from retry storms caused by blocked external DNS"
+    },
+    "10.0.5.20": {
+      "role": "MySQL database server",
+      "community": "Databases",
+      "notes": "Slow queries ~1100ms from app servers; healthy 8ms average masks tail latency"
+    },
+    "10.0.2.10": {
+      "role": "Web Store server",
+      "community": "Front-End Web",
+      "notes": "Serves Web Store application; P95 affected by WAN latency to branch offices"
+    },
+    "8.8.8.8": {
+      "role": "Google Public DNS (external)",
+      "community": null,
+      "notes": "BLOCKED — 100% failure from 10.0.3.x web frontends and 10.1.6.10 Prague"
+    },
+    "151.101.2.132": {
+      "role": "Fastly CDN",
+      "community": null,
+      "notes": "Primary CDN endpoint; dominant traffic destination (59.7 MB from 10.0.4.12)"
+    },
+    "151.101.194.132": {
+      "role": "Fastly CDN (alternate)",
+      "community": null,
+      "notes": "Alternate Fastly CDN IP"
+    },
+    "151.101.66.132": {
+      "role": "Fastly CDN (alternate)",
+      "community": null,
+      "notes": "Alternate Fastly CDN IP"
+    },
+    "151.101.130.132": {
+      "role": "Fastly CDN (alternate)",
+      "community": null,
+      "notes": "Alternate Fastly CDN IP"
+    },
+    "82.66.40.79": {
+      "role": "External NTP server",
+      "community": null,
+      "notes": "High latency (507ms, 18.2x std dev) from Prague host 10.1.6.10"
+    },
+    "10.0.4.10": {
+      "role": "Application server",
+      "community": "Middleware - API",
+      "notes": "MySQL client, Shop Backend API client; affected by MySQL slow queries"
+    },
+    "10.0.4.11": {
+      "role": "Application server",
+      "community": "Middleware - API",
+      "notes": "MySQL client; affected by MySQL slow queries"
+    },
+    "10.0.4.12": {
+      "role": "Application server",
+      "community": "Middleware - API",
+      "notes": "MySQL client; dominant Fastly CDN consumer (57 MB download)"
+    },
+    "10.0.3.20": {
+      "role": "Web frontend host",
+      "community": "Front-End Web",
+      "notes": "DNS failures to 8.8.8.8 (32,007 failed txn)"
+    },
+    "10.0.3.21": {
+      "role": "Web frontend host",
+      "community": "Front-End Web",
+      "notes": "DNS failures to 8.8.8.8 (32,204 failed txn)"
+    },
+    "10.0.3.22": {
+      "role": "Web frontend host",
+      "community": "Front-End Web",
+      "notes": "DNS failures to 8.8.8.8 (32,209 failed txn); also Shop Backend API latency spikes"
+    },
+    "10.1.6.10": {
+      "role": "Prague branch host",
+      "community": null,
+      "notes": "DNS failures to 8.8.8.8 (713 failed txn); NTP latency spike to 82.66.40.79"
+    },
+    "10.0.1.10": {
+      "role": "Branch/edge host",
+      "community": null,
+      "notes": "Traffic to Fastly CDN (4.2 MB)"
+    },
+    "10.0.1.11": {
+      "role": "Branch/edge host",
+      "community": null,
+      "notes": "Traffic to Fastly CDN (3.6 MB)"
+    },
+    "10.0.1.13": {
+      "role": "Branch/edge host",
+      "community": null,
+      "notes": "Traffic to Fastly CDN (3.6 MB)"
+    },
+    "10.0.1.14": {
+      "role": "Branch/edge host",
+      "community": null,
+      "notes": "Branch/edge host"
+    },
+    "10.0.1.16": {
+      "role": "Branch/edge host",
+      "community": null,
+      "notes": "Branch/edge host"
+    },
+    "10.1.1.10": {
+      "role": "Branch host",
+      "community": null,
+      "notes": "DNS latency spike to internal server 10.0.2.100 (77ms, 12.5x std dev)"
+    }
+  },
+  "top_traffic_pairs": [
+    {
+      "rank": 1,
+      "client": "10.0.4.12",
+      "server": "151.101.2.132",
+      "application": "Fastly CDN",
+      "port": 443,
+      "total_bytes": "59.7 MB",
+      "server_to_client_bytes": "57 MB"
+    },
+    {
+      "rank": 2,
+      "client": "10.0.1.10",
+      "server": "151.101.2.132",
+      "application": "Technology",
+      "port": 443,
+      "total_bytes": "4.2 MB"
+    },
+    {
+      "rank": 3,
+      "client": "10.0.1.11",
+      "server": "151.101.2.132",
+      "application": "Technology",
+      "port": 443,
+      "total_bytes": "3.6 MB"
+    },
+    {
+      "rank": 4,
+      "client": "10.0.1.13",
+      "server": "151.101.2.132",
+      "application": "Technology",
+      "port": 443,
+      "total_bytes": "3.6 MB"
+    },
+    {
+      "rank": 5,
+      "client": "10.0.4.12",
+      "server": "10.0.5.20",
+      "application": "MYSQL",
+      "port": 3306,
+      "total_bytes": "804 KB"
+    },
+    {
+      "rank": 6,
+      "client": "10.0.4.11",
+      "server": "10.0.5.20",
+      "application": "MYSQL",
+      "port": 3306,
+      "total_bytes": "779 KB"
+    }
+  ],
+  "anomalies": {
+    "high_error_rate": [
+      {
+        "client": "10.1.6.10",
+        "server": "8.8.8.8",
+        "application": "DNS",
+        "transactions": 713,
+        "error_rate_pct": 100
+      },
+      {
+        "client": "10.0.3.21",
+        "server": "8.8.8.8",
+        "application": "DNS",
+        "transactions": 32204,
+        "error_rate_pct": 100
+      },
+      {
+        "client": "10.0.3.20",
+        "server": "8.8.8.8",
+        "application": "DNS",
+        "transactions": 32007,
+        "error_rate_pct": 100
+      },
+      {
+        "client": "10.0.3.22",
+        "server": "8.8.8.8",
+        "application": "DNS",
+        "transactions": 32209,
+        "error_rate_pct": 100
+      }
+    ],
+    "latency_spikes": [
+      {
+        "client": "10.0.4.10",
+        "server": "10.0.5.20",
+        "application": "MYSQL",
+        "latency_ms": 1137,
+        "std_dev_multiple": 24.0,
+        "baseline_avg_ms": 8.1
+      },
+      {
+        "client": "10.0.4.11",
+        "server": "10.0.5.20",
+        "application": "MYSQL",
+        "latency_ms": 1124,
+        "std_dev_multiple": 23.7,
+        "baseline_avg_ms": 8.1
+      },
+      {
+        "client": "10.0.4.12",
+        "server": "10.0.5.20",
+        "application": "MYSQL",
+        "latency_ms": 1118,
+        "std_dev_multiple": 23.6,
+        "baseline_avg_ms": 8.1
+      },
+      {
+        "client": "10.1.6.10",
+        "server": "82.66.40.79",
+        "application": "NTP",
+        "latency_ms": 507,
+        "std_dev_multiple": 18.2,
+        "baseline_avg_ms": 17.9
+      },
+      {
+        "client": "10.0.4.10",
+        "server": "10.0.2.100",
+        "application": "DNS",
+        "latency_ms": 87,
+        "std_dev_multiple": 14.2,
+        "baseline_avg_ms": 2.8
+      },
+      {
+        "client": "10.1.1.10",
+        "server": "10.0.2.100",
+        "application": "DNS",
+        "latency_ms": 77,
+        "std_dev_multiple": 12.5,
+        "baseline_avg_ms": 2.8
+      },
+      {
+        "client": "10.0.3.22",
+        "server": "10.0.4.10",
+        "application": "Shop Backend API",
+        "latency_ms": 1221,
+        "std_dev_multiple": 11.1,
+        "baseline_avg_ms": 61.2
+      }
+    ]
+  }
+}

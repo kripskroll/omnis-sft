@@ -1,0 +1,358 @@
+{
+  "version": "1.0",
+  "description": "Hand-crafted gold-standard chain examples for SFT training",
+  "format_notes": {
+    "roles": "system, user, assistant, tool",
+    "think_tags": "<think>...</think> blocks contain explicit reasoning between tool calls",
+    "tool_call_format": "<tool_call>{\"name\": \"tool_name\", \"arguments\": {...}}</tool_call>",
+    "tool_results": "Realistic JSON matching live Omnis MCP responses"
+  },
+  "seed_chains": [
+    {
+      "id": "seed_01",
+      "workflow": "health_triage",
+      "description": "Broad health scan -> spot DNS issues -> drill into DNS",
+      "persona": "noc_operator",
+      "difficulty": "easy",
+      "chain_length": 3,
+      "teaching_point": "Start broad, identify worst application, drill down",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "Hey, anything wrong on the network right now?"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The operator is asking for a general health check. I should start with the broadest view available — get_health_overview will give me a summary of all applications and their error rates so I can spot anything abnormal.</think>\n\n<tool_call>{\"name\": \"get_health_overview\", \"arguments\": {}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_health_overview",
+          "content": "{\"status\": \"ok\", \"data\": {\"time_range\": \"last_1h\", \"applications\": [{\"name\": \"DNS\", \"transactions\": 479283, \"errors\": 97143, \"error_rate_pct\": 20.3, \"avg_latency_ms\": 2.8, \"status\": \"critical\"}, {\"name\": \"MYSQL\", \"transactions\": 446012, \"errors\": 0, \"error_rate_pct\": 0.0, \"avg_latency_ms\": 8.1, \"status\": \"healthy\"}, {\"name\": \"SSH\", \"transactions\": 153488, \"errors\": 0, \"error_rate_pct\": 0.0, \"avg_latency_ms\": 92.8, \"status\": \"healthy\"}, {\"name\": \"Web Store\", \"transactions\": 86201, \"errors\": 8, \"error_rate_pct\": 0.01, \"avg_latency_ms\": 106.8, \"status\": \"healthy\"}, {\"name\": \"Shop Backend API\", \"transactions\": 48330, \"errors\": 0, \"error_rate_pct\": 0.0, \"avg_latency_ms\": 61.2, \"status\": \"healthy\"}], \"total_hosts\": 171, \"total_connections\": 640, \"total_sites\": 8}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The health overview shows a clear problem: DNS has a 20.3% error rate with 97,143 errors out of 479,283 transactions. That's critical. Everything else looks clean — MYSQL has 0 errors, SSH and Web Store are fine. Let me drill into DNS specifically to understand which endpoints are failing and what the error breakdown looks like.</think>\n\n<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application\": \"DNS\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_application_summary",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"DNS\", \"time_range\": \"last_1h\", \"total_transactions\": 479283, \"total_errors\": 97143, \"error_rate_pct\": 20.3, \"avg_latency_ms\": 2.8, \"p95_latency_ms\": 12.4, \"p99_latency_ms\": 45.2, \"top_error_clients\": [{\"client_ip\": \"10.0.3.20\", \"errors\": 28412, \"error_rate_pct\": 100.0, \"server_ip\": \"8.8.8.8\"}, {\"client_ip\": \"10.0.3.21\", \"errors\": 24893, \"error_rate_pct\": 100.0, \"server_ip\": \"8.8.8.8\"}, {\"client_ip\": \"10.0.3.22\", \"errors\": 21507, \"error_rate_pct\": 100.0, \"server_ip\": \"8.8.8.8\"}, {\"client_ip\": \"10.1.6.10\", \"errors\": 22331, \"error_rate_pct\": 100.0, \"server_ip\": \"8.8.8.8\"}], \"top_healthy_servers\": [{\"server_ip\": \"10.0.2.100\", \"transactions\": 382140, \"error_rate_pct\": 0.0, \"avg_latency_ms\": 1.9}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Here's what I found:\n\n**DNS is in critical condition** — 20.3% error rate (97K errors out of 479K transactions in the last hour).\n\nThe problem is concentrated on 4 hosts that are all failing 100% when trying to reach Google DNS (8.8.8.8):\n- 10.0.3.20 — 28,412 failures\n- 10.0.3.21 — 24,893 failures\n- 10.0.3.22 — 21,507 failures\n- 10.1.6.10 — 22,331 failures\n\nMeanwhile, the internal DNS server 10.0.2.100 is handling 382K queries with zero errors and 1.9ms latency — so internal DNS is perfectly healthy.\n\n**Recommendation**: This looks like a firewall or routing issue blocking outbound DNS to 8.8.8.8. Check firewall rules for UDP/TCP 53 to 8.8.8.8. In the meantime, those 4 hosts should be reconfigured to use the internal DNS server 10.0.2.100 instead. Everything else on the network is looking good."
+        }
+      ]
+    },
+    {
+      "id": "seed_02",
+      "workflow": "dns_investigation",
+      "description": "Deep DNS failure investigation with host-level drill-down",
+      "persona": "network_engineer",
+      "difficulty": "hard",
+      "chain_length": 4,
+      "teaching_point": "Use anomaly detection to find outliers, then drill into specific hosts to confirm root cause",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "DNS seems broken, can you investigate the failures? I need to understand which hosts are affected and what's going on."
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The engineer suspects DNS failures. Rather than starting with a general health overview, I should go straight to anomaly detection for DNS — this will surface the statistical outliers and failure patterns that matter most for root cause analysis.</think>\n\n<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_anomalies",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"DNS\", \"anomalies\": [{\"type\": \"error_rate_spike\", \"severity\": \"critical\", \"description\": \"100% failure rate to server 8.8.8.8\", \"affected_clients\": [\"10.0.3.20\", \"10.0.3.21\", \"10.0.3.22\", \"10.1.6.10\"], \"server_ip\": \"8.8.8.8\", \"error_count\": 97143, \"baseline_error_rate_pct\": 0.1, \"current_error_rate_pct\": 100.0, \"started_at\": \"2026-03-20T08:12:00Z\"}, {\"type\": \"latency_spike\", \"severity\": \"warning\", \"description\": \"Elevated latency on internal DNS\", \"affected_server\": \"10.0.2.100\", \"current_avg_ms\": 4.2, \"baseline_avg_ms\": 1.9, \"likely_cause\": \"retry_storms_from_failing_clients\"}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>Two anomalies detected:\n1. Critical: 100% failure rate from 4 clients (10.0.3.20, 10.0.3.21, 10.0.3.22, 10.1.6.10) to 8.8.8.8 — started at 08:12 UTC today. 97,143 total errors.\n2. Warning: Internal DNS server 10.0.2.100 latency spiked from 1.9ms baseline to 4.2ms — likely caused by retry storms from the failing clients.\n\nI need to drill into one of the affected clients to see the actual DNS query patterns — what domains are being queried, what responses (or lack thereof) are coming back. Let me pick 10.0.3.20 as it has the highest error count.</think>\n\n<tool_call>{\"name\": \"get_dns_queries\", \"arguments\": {\"client_ip\": \"10.0.3.20\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_dns_queries",
+          "content": "{\"status\": \"ok\", \"data\": {\"client_ip\": \"10.0.3.20\", \"time_range\": \"last_1h\", \"total_queries\": 28412, \"queries\": [{\"query_name\": \"api.example.com\", \"query_type\": \"A\", \"server_ip\": \"8.8.8.8\", \"response_code\": null, \"status\": \"timeout\", \"latency_ms\": null, \"count\": 9814}, {\"query_name\": \"cdn.example.com\", \"query_type\": \"A\", \"server_ip\": \"8.8.8.8\", \"response_code\": null, \"status\": \"timeout\", \"latency_ms\": null, \"count\": 8203}, {\"query_name\": \"auth.example.com\", \"query_type\": \"A\", \"server_ip\": \"8.8.8.8\", \"response_code\": null, \"status\": \"timeout\", \"latency_ms\": null, \"count\": 7112}, {\"query_name\": \"metrics.internal.local\", \"query_type\": \"A\", \"server_ip\": \"10.0.2.100\", \"response_code\": 0, \"status\": \"success\", \"latency_ms\": 2.1, \"count\": 3283}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>This confirms the issue. All 28,412 queries from 10.0.3.20 to 8.8.8.8 are timing out — no response_code, no latency, all status \"timeout\". The queries are for legitimate domains (api.example.com, cdn.example.com, auth.example.com). Importantly, the same host's queries to the internal DNS server 10.0.2.100 are succeeding with 2.1ms latency. So the host has working network connectivity — it's specifically the path to 8.8.8.8 that is blocked.\n\nNow I want to verify whether this is a host-level issue or a network-level issue. Let me check what 10.0.3.20 can and cannot reach using host reachability. This will help determine if it's a firewall rule blocking port 53 outbound to 8.8.8.8, or something more fundamental.</think>\n\n<tool_call>{\"name\": \"get_host_reachability\", \"arguments\": {\"ip\": \"10.0.3.20\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_host_reachability",
+          "content": "{\"status\": \"ok\", \"data\": {\"host_ip\": \"10.0.3.20\", \"site\": \"Francfort DC\", \"reachable_hosts\": [{\"ip\": \"10.0.2.100\", \"service\": \"DNS\", \"port\": 53, \"status\": \"reachable\"}, {\"ip\": \"10.0.5.20\", \"service\": \"MYSQL\", \"port\": 3306, \"status\": \"reachable\"}, {\"ip\": \"10.0.1.1\", \"service\": \"gateway\", \"port\": null, \"status\": \"reachable\"}], \"unreachable_hosts\": [{\"ip\": \"8.8.8.8\", \"service\": \"DNS\", \"port\": 53, \"status\": \"unreachable\", \"last_reachable\": \"2026-03-20T08:10:00Z\"}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Here's my analysis:\n\n**Root Cause: Connectivity to 8.8.8.8 port 53 is blocked**\n\nThe evidence chain:\n\n1. **4 affected hosts**: 10.0.3.20, 10.0.3.21, 10.0.3.22 (Francfort DC, 10.0.3.x subnet) and 10.1.6.10 (branch site) — all showing 100% DNS failure to 8.8.8.8 since 08:12 UTC.\n\n2. **Failure mode is timeout**: All queries to 8.8.8.8 return no response — this is not a DNS error (SERVFAIL/NXDOMAIN), it's a connectivity failure. The packets are being dropped.\n\n3. **Internal connectivity is fine**: Host 10.0.3.20 successfully reaches the internal DNS server (10.0.2.100), MySQL server (10.0.5.20), and its gateway (10.0.1.1). The host was last able to reach 8.8.8.8 at 08:10 UTC — 2 minutes before failures started.\n\n4. **Collateral damage**: The retry storms from these 4 hosts have elevated latency on the internal DNS server 10.0.2.100 from 1.9ms baseline to 4.2ms.\n\n**Diagnosis**: A firewall or ACL change at approximately 08:10-08:12 UTC is blocking outbound DNS (UDP/TCP 53) to 8.8.8.8. The fact that both Francfort DC hosts and a branch host (10.1.6.10) are affected suggests the block is at a centralized egress point, likely the Francfort DC perimeter firewall.\n\n**Recommendations**:\n1. Review firewall change logs around 08:10 UTC for any ACL modifications affecting outbound port 53\n2. Immediate mitigation: reconfigure the 4 affected hosts to use 10.0.2.100 as their DNS resolver\n3. If external DNS is required, consider allowing 8.8.8.8 or deploying a DNS forwarder on 10.0.2.100"
+        }
+      ]
+    },
+    {
+      "id": "seed_03",
+      "workflow": "site_performance",
+      "description": "Site-level performance review with application drill-down",
+      "persona": "it_manager",
+      "difficulty": "medium",
+      "chain_length": 3,
+      "teaching_point": "Managers want summaries with business impact — translate metrics into plain language",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "How is Francfort DC performing? I have a meeting in 10 minutes and need a quick summary."
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The IT manager needs a quick site-level summary for Francfort DC. I'll start with get_site_summary to get the aggregate view of all applications and traffic at that site. This should give me enough for a high-level overview, and I can drill into anything that looks concerning.</think>\n\n<tool_call>{\"name\": \"get_site_summary\", \"arguments\": {\"site_name\": \"Francfort DC\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_site_summary",
+          "content": "{\"status\": \"ok\", \"data\": {\"site\": \"Francfort DC\", \"role\": \"hub\", \"time_range\": \"last_1h\", \"total_hosts\": 84, \"total_connections\": 312, \"connected_sites\": [\"Paris\", \"Lyon\", \"Marseille\", \"Bordeaux\", \"Lille\", \"Toulouse\", \"Strasbourg\"], \"applications\": [{\"name\": \"MYSQL\", \"transactions\": 446012, \"errors\": 0, \"avg_latency_ms\": 8.1}, {\"name\": \"DNS\", \"transactions\": 341200, \"errors\": 72841, \"avg_latency_ms\": 2.8}, {\"name\": \"Web Store\", \"transactions\": 86201, \"errors\": 8, \"avg_latency_ms\": 106.8}, {\"name\": \"Shop Backend API\", \"transactions\": 48330, \"errors\": 0, \"avg_latency_ms\": 61.2}, {\"name\": \"SSH\", \"transactions\": 89102, \"errors\": 0, \"avg_latency_ms\": 42.1}], \"bandwidth\": {\"total_bytes\": 2147483648, \"top_consumer\": {\"client_ip\": \"10.0.4.12\", \"bytes\": 59768832, \"destination\": \"151.101.2.132\"}}}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>Francfort DC is the hub site with 84 hosts and connections to 7 branch sites. The key metrics:\n- MYSQL: 446K transactions, 0 errors, 8.1ms avg — good\n- DNS: 341K transactions but 72K errors — this is the known DNS issue with 8.8.8.8\n- Web Store: 86K transactions, only 8 errors, but 106.8ms avg latency — this might be worth flagging since it's customer-facing\n- Shop Backend API: 48K, clean, 61.2ms\n- SSH: 89K, clean, 42.1ms (lower than network-wide average since these are local connections)\n\nThe Web Store latency of 106.8ms could concern the manager. Let me check the TCP connection health for Web Store to see if there are retransmissions or connection issues causing that latency.</think>\n\n<tool_call>{\"name\": \"get_connection_health\", \"arguments\": {\"application\": \"Web Store\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_connection_health",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"Web Store\", \"time_range\": \"last_1h\", \"total_connections\": 1248, \"tcp_health\": {\"avg_rtt_ms\": 38.2, \"retransmission_rate_pct\": 2.1, \"reset_rate_pct\": 0.3, \"zero_window_pct\": 0.1}, \"connection_breakdown\": [{\"server_ip\": \"10.0.4.50\", \"connections\": 812, \"avg_rtt_ms\": 22.4, \"retransmission_rate_pct\": 0.8}, {\"server_ip\": \"10.0.4.51\", \"connections\": 436, \"avg_rtt_ms\": 67.8, \"retransmission_rate_pct\": 4.7}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Here's your Francfort DC summary for the meeting:\n\n**Overall: Francfort DC is operational but has two items to flag.**\n\nThe DC is your hub site — 84 hosts, 312 active connections, serving all 7 branch offices (Paris, Lyon, Marseille, etc.). It's handling 2 GB of traffic in the last hour.\n\n**Green (no issues):**\n- MySQL database: 446K queries, zero errors, 8ms response time\n- Shop Backend API: 48K calls, zero errors, 61ms response time\n- SSH: 89K sessions, zero errors\n\n**Yellow (monitor):**\n- Web Store: 86K transactions with only 8 errors, but average latency is 107ms. I checked the TCP health and found server 10.0.4.51 has a 4.7% retransmission rate and 68ms RTT compared to 10.0.4.50 which is healthy at 0.8% retransmission and 22ms RTT. That one server is pulling the average up.\n\n**Red (action needed):**\n- DNS: 72K failures at the site — this is the known issue with 4 hosts unable to reach Google DNS (8.8.8.8). Internal DNS is working fine.\n\n**Key takeaway**: Core business applications (database, web store, API) are running. The DNS issue is contained to external resolution and the Web Store has one underperforming server (10.0.4.51) that your team should look at."
+        }
+      ]
+    },
+    {
+      "id": "seed_04",
+      "workflow": "mysql_troubleshooting",
+      "description": "Healthy averages masking tail latency problems in MySQL",
+      "persona": "application_owner",
+      "difficulty": "hard",
+      "chain_length": 3,
+      "teaching_point": "Average metrics can hide problems — always check tail latency and slow transaction distributions",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "Our database seems fine from the monitoring dashboards but users keep complaining about slow queries. Can you look into MySQL?"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The application owner says dashboards look fine but users complain. This is a classic case where averages mask tail latency. Let me start with the application summary for MySQL to see the top-level metrics and confirm what the dashboards show.</think>\n\n<tool_call>{\"name\": \"get_application_summary\", \"arguments\": {\"application\": \"MYSQL\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_application_summary",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"MYSQL\", \"time_range\": \"last_1h\", \"total_transactions\": 446012, \"total_errors\": 0, \"error_rate_pct\": 0.0, \"avg_latency_ms\": 8.1, \"p50_latency_ms\": 3.2, \"p95_latency_ms\": 42.8, \"p99_latency_ms\": 287.4, \"server_breakdown\": [{\"server_ip\": \"10.0.5.20\", \"transactions\": 446012, \"avg_latency_ms\": 8.1}], \"client_breakdown\": [{\"client_ip\": \"10.0.4.10\", \"transactions\": 162304, \"avg_latency_ms\": 9.2}, {\"client_ip\": \"10.0.4.11\", \"transactions\": 148901, \"avg_latency_ms\": 7.8}, {\"client_ip\": \"10.0.4.12\", \"transactions\": 134807, \"avg_latency_ms\": 7.1}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The summary confirms what the dashboards show: 446K transactions, 0 errors, 8.1ms average latency. Looks healthy at first glance. But the percentile data tells a different story — p50 is 3.2ms (great), p95 is 42.8ms (acceptable), but p99 is 287.4ms. That means 1% of queries are taking 287ms or more, which on 446K transactions means roughly 4,460 slow queries per hour. Users are probably hitting these.\n\nI need to look at the actual slow transactions to see if there's an even worse tail beyond p99. Let me use get_slow_transactions to find the outliers.</think>\n\n<tool_call>{\"name\": \"get_slow_transactions\", \"arguments\": {\"application\": \"MYSQL\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_slow_transactions",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"MYSQL\", \"time_range\": \"last_1h\", \"threshold_ms\": 500, \"slow_transaction_count\": 1847, \"slow_transactions\": [{\"client_ip\": \"10.0.4.10\", \"server_ip\": \"10.0.5.20\", \"avg_latency_ms\": 1134.2, \"max_latency_ms\": 2847.1, \"count\": 723, \"pct_of_client_total\": 0.45}, {\"client_ip\": \"10.0.4.11\", \"server_ip\": \"10.0.5.20\", \"avg_latency_ms\": 1089.7, \"max_latency_ms\": 2412.8, \"count\": 614, \"pct_of_client_total\": 0.41}, {\"client_ip\": \"10.0.4.12\", \"server_ip\": \"10.0.5.20\", \"avg_latency_ms\": 1098.3, \"max_latency_ms\": 2198.4, \"count\": 510, \"pct_of_client_total\": 0.38}], \"pattern\": \"Slow queries distributed evenly across all three clients, suggesting server-side bottleneck\"}}"
+        },
+        {
+          "role": "assistant",
+          "content": "You're right to be suspicious — the dashboards are misleading because the averages hide a real problem.\n\n**The headline metrics look great:**\n- 446K transactions, zero errors, 8.1ms average latency\n- Median (p50) is 3.2ms — most queries are fast\n\n**But here's what the averages are hiding:**\n\nThere are **1,847 slow queries per hour** (above 500ms) hitting your MySQL server at 10.0.5.20, and they're averaging **1,100ms** — that's over a full second. The worst queries peak at nearly 3 seconds (2,847ms).\n\nThe slow queries are spread across all three application servers:\n| Client | Slow Queries | Avg Slow Latency | Max Latency |\n|--------|-------------|------------------|-------------|\n| 10.0.4.10 | 723 (0.45% of its total) | 1,134ms | 2,847ms |\n| 10.0.4.11 | 614 (0.41%) | 1,090ms | 2,413ms |\n| 10.0.4.12 | 510 (0.38%) | 1,098ms | 2,198ms |\n\n**Key insight**: Since the slow queries are evenly distributed across all three clients with similar latency patterns, this is almost certainly a **server-side issue on 10.0.5.20** — not a network or client problem. If it were network-related, you'd see it affect one client more than others.\n\n**Recommendations:**\n1. Check MySQL slow query log on 10.0.5.20 — look for table scans or missing indexes\n2. Monitor server resource utilization (CPU, I/O wait, memory) during slow query periods\n3. Consider adding a p99 latency alert to your dashboards — the 8ms average won't catch this"
+        }
+      ]
+    },
+    {
+      "id": "seed_05",
+      "workflow": "host_investigation",
+      "description": "Investigate a specific host's traffic profile and bandwidth usage",
+      "persona": "security_analyst",
+      "difficulty": "medium",
+      "chain_length": 3,
+      "teaching_point": "Combine activity summary with flow details to build a complete picture of host behavior",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "What is host 10.0.4.12 doing? It seems to generate a lot of traffic and I want to understand its activity profile."
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The security analyst wants to understand the behavior of a specific host. I should start with get_client_activity_summary to get an overview of what applications and servers this host is talking to, along with volume metrics. This will give me the high-level picture before I drill into specific flows.</think>\n\n<tool_call>{\"name\": \"get_client_activity_summary\", \"arguments\": {\"client_ip\": \"10.0.4.12\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_client_activity_summary",
+          "content": "{\"status\": \"ok\", \"data\": {\"client_ip\": \"10.0.4.12\", \"site\": \"Francfort DC\", \"time_range\": \"last_1h\", \"total_connections\": 47, \"total_bytes_sent\": 8412876, \"total_bytes_received\": 68241503, \"applications\": [{\"name\": \"Web Store\", \"connections\": 18, \"bytes_sent\": 4201438, \"bytes_received\": 57892144, \"primary_server\": \"151.101.2.132\", \"avg_latency_ms\": 89.2}, {\"name\": \"MYSQL\", \"connections\": 12, \"bytes_sent\": 2847102, \"bytes_received\": 6124890, \"primary_server\": \"10.0.5.20\", \"avg_latency_ms\": 7.1}, {\"name\": \"DNS\", \"connections\": 8, \"bytes_sent\": 412890, \"bytes_received\": 1024102, \"primary_server\": \"10.0.2.100\", \"avg_latency_ms\": 1.8}, {\"name\": \"SSH\", \"connections\": 5, \"bytes_sent\": 624112, \"bytes_received\": 1847234, \"primary_server\": \"10.0.1.50\", \"avg_latency_ms\": 18.4}, {\"name\": \"Shop Backend API\", \"connections\": 4, \"bytes_sent\": 327334, \"bytes_received\": 1353133, \"primary_server\": \"10.0.4.50\", \"avg_latency_ms\": 42.7}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>Good picture forming. Host 10.0.4.12 is in Francfort DC with 47 connections. It's receiving 68MB total, and the dominant flow is 57MB received from 151.101.2.132 (which is a Fastly CDN IP) via Web Store connections. It also has 12 MySQL connections to 10.0.5.20 and some DNS, SSH, and API traffic.\n\nThe analyst is interested in the traffic volume. Let me get the detailed flow records for this host to see the complete breakdown — timing, ports, protocols — so we can characterize whether this traffic pattern is normal for an application server or potentially suspicious.</think>\n\n<tool_call>{\"name\": \"get_flow_details\", \"arguments\": {\"client_ip\": \"10.0.4.12\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_flow_details",
+          "content": "{\"status\": \"ok\", \"data\": {\"client_ip\": \"10.0.4.12\", \"time_range\": \"last_1h\", \"flows\": [{\"server_ip\": \"151.101.2.132\", \"server_hostname\": \"cdn.fastly.net\", \"protocol\": \"TCP\", \"server_port\": 443, \"application\": \"Web Store\", \"bytes_sent\": 4201438, \"bytes_received\": 57892144, \"packets_sent\": 28941, \"packets_received\": 41203, \"avg_latency_ms\": 89.2, \"retransmission_rate_pct\": 1.2, \"connection_count\": 18, \"first_seen\": \"2026-03-20T07:02:00Z\", \"last_seen\": \"2026-03-20T09:18:00Z\"}, {\"server_ip\": \"10.0.5.20\", \"server_hostname\": \"mysql-primary.internal\", \"protocol\": \"TCP\", \"server_port\": 3306, \"application\": \"MYSQL\", \"bytes_sent\": 2847102, \"bytes_received\": 6124890, \"packets_sent\": 18204, \"packets_received\": 12847, \"avg_latency_ms\": 7.1, \"retransmission_rate_pct\": 0.1, \"connection_count\": 12, \"first_seen\": \"2026-03-20T07:00:00Z\", \"last_seen\": \"2026-03-20T09:19:00Z\"}, {\"server_ip\": \"10.0.2.100\", \"server_hostname\": \"dns-internal.local\", \"protocol\": \"UDP\", \"server_port\": 53, \"application\": \"DNS\", \"bytes_sent\": 412890, \"bytes_received\": 1024102, \"packets_sent\": 8412, \"packets_received\": 8410, \"avg_latency_ms\": 1.8, \"retransmission_rate_pct\": 0.0, \"connection_count\": 8, \"first_seen\": \"2026-03-20T07:00:00Z\", \"last_seen\": \"2026-03-20T09:19:00Z\"}, {\"server_ip\": \"10.0.1.50\", \"server_hostname\": \"bastion.internal\", \"protocol\": \"TCP\", \"server_port\": 22, \"application\": \"SSH\", \"bytes_sent\": 624112, \"bytes_received\": 1847234, \"packets_sent\": 4102, \"packets_received\": 5847, \"avg_latency_ms\": 18.4, \"retransmission_rate_pct\": 0.0, \"connection_count\": 5, \"first_seen\": \"2026-03-20T07:15:00Z\", \"last_seen\": \"2026-03-20T09:10:00Z\"}, {\"server_ip\": \"10.0.4.50\", \"server_hostname\": \"webstore-backend-01.internal\", \"protocol\": \"TCP\", \"server_port\": 8080, \"application\": \"Shop Backend API\", \"bytes_sent\": 327334, \"bytes_received\": 1353133, \"packets_sent\": 2104, \"packets_received\": 3218, \"avg_latency_ms\": 42.7, \"retransmission_rate_pct\": 0.3, \"connection_count\": 4, \"first_seen\": \"2026-03-20T07:05:00Z\", \"last_seen\": \"2026-03-20T09:17:00Z\"}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Here's the complete activity profile for host 10.0.4.12:\n\n**Host Identity**: Application server in Francfort DC. Active since 07:00 UTC today with 47 concurrent connections across 5 applications.\n\n**Traffic Breakdown (by volume):**\n\n| Destination | Service | Bytes Received | Port | Latency | Notes |\n|------------|---------|---------------|------|---------|-------|\n| 151.101.2.132 (Fastly CDN) | Web Store | 57.9 MB | 443/TCP | 89ms | Dominant flow — content pull from CDN |\n| 10.0.5.20 (mysql-primary) | MySQL | 6.1 MB | 3306/TCP | 7.1ms | Database queries, 12 connections |\n| 10.0.1.50 (bastion) | SSH | 1.8 MB | 22/TCP | 18ms | Admin sessions |\n| 10.0.4.50 (webstore-backend-01) | Shop Backend API | 1.4 MB | 8080/TCP | 43ms | API calls |\n| 10.0.2.100 (dns-internal) | DNS | 1.0 MB | 53/UDP | 1.8ms | Name resolution |\n\n**Assessment**: This is a legitimate application server pattern. The host is the #1 bandwidth consumer on the network, but for expected reasons:\n\n1. **57 MB from Fastly CDN** — this host is pulling static content (images, assets) from the CDN for the Web Store application. The 18 persistent HTTPS connections and steady traffic since 07:02 UTC are consistent with a web application server fetching cacheable content.\n2. **MySQL traffic** — standard database query pattern with low latency and minimal retransmissions.\n3. **SSH to bastion host** — 5 sessions to the bastion server, normal admin activity.\n\n**No suspicious indicators**: All traffic is to expected destinations on standard ports. DNS goes to the internal resolver only (not to 8.8.8.8). No unusual protocols or ports.\n\n**Recommendation**: If the 57 MB CDN pull is excessive, consider deploying a local caching proxy or increasing the CDN cache TTLs to reduce bandwidth consumption. Otherwise, this host's traffic pattern is consistent with its role as a Web Store application server."
+        }
+      ]
+    },
+    {
+      "id": "seed_06",
+      "workflow": "cross_site_path_analysis",
+      "description": "Trace network path from branch office to central database",
+      "persona": "network_engineer",
+      "difficulty": "medium",
+      "chain_length": 3,
+      "teaching_point": "Use topology data to understand hub-and-spoke architecture and identify path dependencies",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "What's the network path from our Paris office to the database server? I need to understand the topology for a latency issue we're investigating."
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The engineer wants to trace the path from Paris to the database server. I know from general context that the MySQL server is at 10.0.5.20 in Francfort DC, but I need to identify which host in Paris to use as the source. Let me start with get_topology_summary to get the site layout and identify Paris hosts and confirm the hub-and-spoke architecture.</think>\n\n<tool_call>{\"name\": \"get_topology_summary\", \"arguments\": {}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_topology_summary",
+          "content": "{\"status\": \"ok\", \"data\": {\"total_sites\": 8, \"total_hosts\": 171, \"total_links\": 640, \"architecture\": \"hub_and_spoke\", \"hub_site\": \"Francfort DC\", \"sites\": [{\"name\": \"Francfort DC\", \"role\": \"hub\", \"hosts\": 84, \"subnets\": [\"10.0.0.0/16\"]}, {\"name\": \"Paris\", \"role\": \"branch\", \"hosts\": 22, \"subnets\": [\"10.1.1.0/24\"], \"gateway\": \"10.1.1.1\", \"wan_link\": {\"type\": \"MPLS\", \"bandwidth_mbps\": 100, \"hub_endpoint\": \"10.0.0.1\"}}, {\"name\": \"Lyon\", \"role\": \"branch\", \"hosts\": 18, \"subnets\": [\"10.1.2.0/24\"]}, {\"name\": \"Marseille\", \"role\": \"branch\", \"hosts\": 14, \"subnets\": [\"10.1.3.0/24\"]}, {\"name\": \"Bordeaux\", \"role\": \"branch\", \"hosts\": 12, \"subnets\": [\"10.1.4.0/24\"]}, {\"name\": \"Lille\", \"role\": \"branch\", \"hosts\": 10, \"subnets\": [\"10.1.5.0/24\"]}, {\"name\": \"Toulouse\", \"role\": \"branch\", \"hosts\": 7, \"subnets\": [\"10.1.6.0/24\"]}, {\"name\": \"Strasbourg\", \"role\": \"branch\", \"hosts\": 4, \"subnets\": [\"10.1.7.0/24\"]}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>Now I have the topology. Paris is a branch site with 22 hosts on the 10.1.1.0/24 subnet, connected to Francfort DC via MPLS at 100 Mbps. The Paris gateway is 10.1.1.1 and the hub endpoint is 10.0.0.1. The database server is 10.0.5.20 in Francfort DC.\n\nLet me trace the path from a Paris host (10.1.1.10) to the MySQL server (10.0.5.20) using find_shortest_path. This will show the hops and latency at each point.</think>\n\n<tool_call>{\"name\": \"find_shortest_path\", \"arguments\": {\"from_ip\": \"10.1.1.10\", \"to_ip\": \"10.0.5.20\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "find_shortest_path",
+          "content": "{\"status\": \"ok\", \"data\": {\"from_ip\": \"10.1.1.10\", \"from_site\": \"Paris\", \"to_ip\": \"10.0.5.20\", \"to_site\": \"Francfort DC\", \"total_hops\": 4, \"total_latency_ms\": 28.4, \"path\": [{\"hop\": 1, \"ip\": \"10.1.1.1\", \"hostname\": \"paris-gw-01\", \"site\": \"Paris\", \"type\": \"gateway\", \"latency_ms\": 0.8}, {\"hop\": 2, \"ip\": \"10.1.1.254\", \"hostname\": \"paris-pe-01\", \"site\": \"Paris\", \"type\": \"wan_edge\", \"latency_ms\": 1.2}, {\"hop\": 3, \"ip\": \"10.0.0.1\", \"hostname\": \"fdc-pe-01\", \"site\": \"Francfort DC\", \"type\": \"wan_edge\", \"latency_ms\": 24.1}, {\"hop\": 4, \"ip\": \"10.0.5.20\", \"hostname\": \"mysql-primary\", \"site\": \"Francfort DC\", \"type\": \"server\", \"latency_ms\": 2.3}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Here's the path analysis from Paris to the MySQL database server:\n\n**Path: 10.1.1.10 (Paris) -> 10.0.5.20 (Francfort DC) — 4 hops, 28.4ms total**\n\n```\nHop 1: 10.1.1.1  (paris-gw-01)     Paris LAN gateway     0.8ms\nHop 2: 10.1.1.254 (paris-pe-01)     Paris WAN edge        1.2ms\n  --- MPLS WAN (100 Mbps) ---\nHop 3: 10.0.0.1  (fdc-pe-01)        Francfort DC WAN edge 24.1ms  <-- WAN transit\nHop 4: 10.0.5.20 (mysql-primary)    Francfort DC server   2.3ms\n```\n\n**Key observations:**\n\n1. **The WAN hop dominates**: 24.1ms of the 28.4ms total (85%) is spent on the MPLS link between Paris and Francfort DC. The LAN segments on both sides contribute less than 5ms combined.\n\n2. **Hub-and-spoke architecture**: All 7 branch offices route through Francfort DC. There is no direct branch-to-branch connectivity. This means Paris-to-database latency is inherently bounded by the WAN distance.\n\n3. **For your latency investigation**: A 28ms round-trip to the database is the physical baseline for any Paris user. If MySQL queries from Paris are averaging 8ms (the overall average), that number is being pulled down by Francfort DC local clients. Paris users likely experience 28ms + query processing time. For a query that takes 8ms to execute on the server, Paris users would see ~36ms end-to-end.\n\n**Recommendations:**\n- If Paris database latency is a problem, consider deploying a read replica at the Paris site for read-heavy workloads\n- Alternatively, implement connection pooling to amortize the WAN setup cost across multiple queries\n- Monitor the MPLS link utilization — at 100 Mbps, bandwidth shouldn't be the bottleneck, but check for congestion during peak hours"
+        }
+      ]
+    },
+    {
+      "id": "seed_07",
+      "workflow": "security_scan",
+      "description": "Check for suspicious DNS patterns including potential DGA domains",
+      "persona": "security_analyst",
+      "difficulty": "hard",
+      "chain_length": 3,
+      "teaching_point": "Distinguish between infrastructure issues and actual security threats — not every anomaly is malicious",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "I need to check for any suspicious DNS activity on the network. We had reports of potential command-and-control traffic patterns."
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The security analyst is looking for potential C2 traffic via DNS. Common indicators include: (1) DNS tunneling — high query volumes to single domains, (2) DGA domains — NXDOMAIN responses for random-looking domain names, (3) unusual DNS servers — queries going to non-standard resolvers, (4) anomalous query patterns.\n\nLet me start with get_anomalies for DNS to surface any statistical outliers that could indicate malicious activity.</think>\n\n<tool_call>{\"name\": \"get_anomalies\", \"arguments\": {\"application\": \"DNS\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_anomalies",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"DNS\", \"anomalies\": [{\"type\": \"error_rate_spike\", \"severity\": \"critical\", \"description\": \"100% failure rate to server 8.8.8.8\", \"affected_clients\": [\"10.0.3.20\", \"10.0.3.21\", \"10.0.3.22\", \"10.1.6.10\"], \"server_ip\": \"8.8.8.8\", \"error_count\": 97143, \"baseline_error_rate_pct\": 0.1, \"current_error_rate_pct\": 100.0, \"started_at\": \"2026-03-20T08:12:00Z\"}, {\"type\": \"latency_spike\", \"severity\": \"warning\", \"description\": \"Elevated latency on internal DNS\", \"affected_server\": \"10.0.2.100\", \"current_avg_ms\": 4.2, \"baseline_avg_ms\": 1.9, \"likely_cause\": \"retry_storms_from_failing_clients\"}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The anomalies show the known infrastructure issue — 4 hosts failing to reach 8.8.8.8 and the resulting latency spike on internal DNS. These don't look like security threats — the failure to 8.8.8.8 is a connectivity issue, not exfiltration.\n\nBut I need to look deeper for C2 indicators. DGA-based malware typically generates many NXDOMAIN responses (response_code=3 in DNS) because it tries random domain names until it finds one the attacker has registered. Let me query for NXDOMAIN responses to check for DGA-like patterns.</think>\n\n<tool_call>{\"name\": \"get_dns_queries\", \"arguments\": {\"response_code\": 3}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_dns_queries",
+          "content": "{\"status\": \"ok\", \"data\": {\"filter\": \"response_code=3 (NXDOMAIN)\", \"time_range\": \"last_1h\", \"total_nxdomain\": 342, \"nxdomain_rate_pct\": 0.09, \"queries\": [{\"client_ip\": \"10.0.4.10\", \"query_name\": \"staging-old.example.com\", \"server_ip\": \"10.0.2.100\", \"count\": 84, \"pattern\": \"repeated\"}, {\"client_ip\": \"10.0.4.11\", \"query_name\": \"cache-v2.internal.local\", \"server_ip\": \"10.0.2.100\", \"count\": 67, \"pattern\": \"repeated\"}, {\"client_ip\": \"10.1.1.15\", \"query_name\": \"printer-floor3.internal.local\", \"server_ip\": \"10.0.2.100\", \"count\": 52, \"pattern\": \"repeated\"}, {\"client_ip\": \"10.0.3.22\", \"query_name\": \"api.example.com\", \"server_ip\": \"8.8.8.8\", \"count\": 48, \"pattern\": \"timeout_misclassified\"}, {\"client_ip\": \"10.1.2.8\", \"query_name\": \"updates.vendor-software.com\", \"server_ip\": \"10.0.2.100\", \"count\": 41, \"pattern\": \"periodic\"}, {\"client_ip\": \"10.0.1.50\", \"query_name\": \"ntp-pool.internal.local\", \"server_ip\": \"10.0.2.100\", \"count\": 28, \"pattern\": \"repeated\"}, {\"client_ip\": \"10.1.5.3\", \"query_name\": \"old-intranet.corp.local\", \"server_ip\": \"10.0.2.100\", \"count\": 22, \"pattern\": \"repeated\"}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Here's my security assessment of DNS activity:\n\n**No indicators of C2 or DGA activity detected.**\n\nI checked two threat vectors:\n\n**1. DNS Anomaly Analysis**\nThe only anomalies on the network are infrastructure-related:\n- 4 hosts (10.0.3.20/21/22 and 10.1.6.10) failing 100% to Google DNS 8.8.8.8 since 08:12 UTC — this is a connectivity/firewall issue, not exfiltration. The traffic pattern shows standard domain queries (api.example.com, cdn.example.com) that are timing out, not DNS tunneling signatures.\n- Internal DNS latency elevated from 1.9ms to 4.2ms due to retry storms — secondary effect of the above.\n\n**2. NXDOMAIN / DGA Analysis**\nOnly 342 NXDOMAIN responses in the last hour (0.09% of all DNS traffic) — well within normal range. The queries are:\n- `staging-old.example.com` (84 hits from 10.0.4.10) — stale config pointing to decommissioned hostname\n- `cache-v2.internal.local` (67 hits from 10.0.4.11) — same pattern, old internal hostname\n- `printer-floor3.internal.local` (52 hits from Paris 10.1.1.15) — probably a removed printer\n- `updates.vendor-software.com` (41 hits from Lyon 10.1.2.8) — periodic update check, vendor domain may be expired\n- Other entries are similar stale-config patterns\n\n**Why this is NOT DGA**: DGA domains are algorithmically generated and look random (e.g., `xk4mf9a2.com`, `b7rtq3.net`). All NXDOMAIN queries here are human-readable, repeated (not unique), and map to known internal naming conventions or legitimate vendor domains.\n\n**Recommendations:**\n1. No immediate security action needed — no C2 indicators found\n2. Housekeeping: clean up stale DNS references in configs on 10.0.4.10, 10.0.4.11, and 10.1.1.15 to reduce unnecessary NXDOMAIN traffic\n3. Investigate the 8.8.8.8 connectivity issue separately — it's an infrastructure problem, not a security one\n4. Consider deploying DNS query logging with entropy analysis if you want ongoing DGA detection"
+        }
+      ]
+    },
+    {
+      "id": "seed_08",
+      "workflow": "wrong_path_recovery",
+      "description": "Initial hypothesis is wrong — pivot from errors to performance metrics",
+      "persona": "noc_operator",
+      "difficulty": "hard",
+      "chain_length": 4,
+      "teaching_point": "When the first tool call returns no issues, don't stop — consider alternative explanations and pivot your investigation",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a network diagnostics assistant with access to NETSCOUT Omnis monitoring tools. When investigating network issues:\n1. Start with broad health checks, then drill into specific problems\n2. Reason step by step in <think> tags before each tool call\n3. Extract specific values (IPs, error rates, latencies) from tool results for follow-up queries\n4. Always provide actionable recommendations in your final answer"
+        },
+        {
+          "role": "user",
+          "content": "Is SSH having problems? Users in the branch offices are complaining it feels sluggish."
+        },
+        {
+          "role": "assistant",
+          "content": "<think>The operator reports SSH sluggishness from branch offices. My first instinct is to check for errors — connection failures, timeouts, resets. Let me start with get_errors to see if there are any SSH failures.</think>\n\n<tool_call>{\"name\": \"get_errors\", \"arguments\": {\"application\": \"SSH\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_errors",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"SSH\", \"time_range\": \"last_1h\", \"total_errors\": 0, \"error_breakdown\": [], \"message\": \"No errors detected for SSH in the specified time range\"}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>Zero SSH errors. But users are complaining, so something is wrong. The absence of errors doesn't mean absence of problems — SSH could have high latency without any connection failures. Users perceive sluggishness as a performance issue, not an error. I need to pivot from error investigation to performance investigation. Let me check the detailed performance metrics for SSH including latency distribution and per-site breakdown.</think>\n\n<tool_call>{\"name\": \"get_performance_metrics\", \"arguments\": {\"application\": \"SSH\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_performance_metrics",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"SSH\", \"time_range\": \"last_1h\", \"total_transactions\": 153488, \"total_errors\": 0, \"avg_latency_ms\": 92.8, \"p50_latency_ms\": 44.2, \"p95_latency_ms\": 218.4, \"p99_latency_ms\": 487.2, \"latency_by_site\": [{\"site\": \"Francfort DC\", \"avg_latency_ms\": 18.4, \"transactions\": 89102, \"p95_latency_ms\": 32.1}, {\"site\": \"Paris\", \"avg_latency_ms\": 48.2, \"transactions\": 22104, \"p95_latency_ms\": 89.4}, {\"site\": \"Lyon\", \"avg_latency_ms\": 142.8, \"transactions\": 14201, \"p95_latency_ms\": 284.1}, {\"site\": \"Marseille\", \"avg_latency_ms\": 168.4, \"transactions\": 11847, \"p95_latency_ms\": 312.7}, {\"site\": \"Bordeaux\", \"avg_latency_ms\": 187.2, \"transactions\": 8102, \"p95_latency_ms\": 347.8}, {\"site\": \"Lille\", \"avg_latency_ms\": 78.4, \"transactions\": 4210, \"p95_latency_ms\": 142.3}, {\"site\": \"Toulouse\", \"avg_latency_ms\": 201.4, \"transactions\": 2487, \"p95_latency_ms\": 389.1}, {\"site\": \"Strasbourg\", \"avg_latency_ms\": 64.1, \"transactions\": 1435, \"p95_latency_ms\": 118.7}], \"server_breakdown\": [{\"server_ip\": \"10.0.1.50\", \"hostname\": \"bastion.internal\", \"transactions\": 98412, \"avg_latency_ms\": 78.2}, {\"server_ip\": \"10.0.1.51\", \"hostname\": \"jumpbox-02.internal\", \"transactions\": 55076, \"avg_latency_ms\": 118.7}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "<think>Now I see the problem clearly. SSH has zero errors but a 92.8ms average latency, which is high for an interactive protocol. The per-site breakdown reveals the pattern:\n\n- Francfort DC: 18.4ms (fine — local connections)\n- Paris: 48.2ms (acceptable)\n- Lille: 78.4ms, Strasbourg: 64.1ms (moderate)\n- Lyon: 142.8ms, Marseille: 168.4ms, Bordeaux: 187.2ms, Toulouse: 201.4ms (all bad for interactive SSH)\n\nThe southern/distant branch offices have much worse latency. Toulouse at p95 of 389ms would be very noticeable to users — every keystroke echoes back with a 200-400ms delay.\n\nAlso interesting: there are two SSH servers. bastion.internal (10.0.1.50) handles 98K transactions at 78ms avg, while jumpbox-02 (10.0.1.51) handles 55K at 119ms avg. The jumpbox is notably slower.\n\nThe root cause is clear: all SSH connections go through Francfort DC (hub-and-spoke), so distant branches experience the full WAN round-trip latency on every keystroke. This is inherent to the architecture, not a new problem — but it might have gotten worse if WAN quality degraded.\n\nLet me check the connection health for SSH to see if there are TCP-level issues (retransmissions, etc.) that could be adding to the perceived sluggishness on top of the base WAN latency.</think>\n\n<tool_call>{\"name\": \"get_connection_health\", \"arguments\": {\"application\": \"SSH\"}}</tool_call>"
+        },
+        {
+          "role": "tool",
+          "name": "get_connection_health",
+          "content": "{\"status\": \"ok\", \"data\": {\"application\": \"SSH\", \"time_range\": \"last_1h\", \"total_connections\": 842, \"tcp_health\": {\"avg_rtt_ms\": 72.4, \"retransmission_rate_pct\": 3.8, \"reset_rate_pct\": 0.2, \"zero_window_pct\": 0.0}, \"connection_breakdown_by_site\": [{\"site\": \"Francfort DC\", \"connections\": 412, \"avg_rtt_ms\": 12.1, \"retransmission_rate_pct\": 0.4}, {\"site\": \"Paris\", \"connections\": 128, \"avg_rtt_ms\": 28.4, \"retransmission_rate_pct\": 1.2}, {\"site\": \"Lyon\", \"connections\": 87, \"avg_rtt_ms\": 98.2, \"retransmission_rate_pct\": 6.4}, {\"site\": \"Marseille\", \"connections\": 72, \"avg_rtt_ms\": 112.4, \"retransmission_rate_pct\": 7.1}, {\"site\": \"Bordeaux\", \"connections\": 58, \"avg_rtt_ms\": 128.7, \"retransmission_rate_pct\": 8.2}, {\"site\": \"Toulouse\", \"connections\": 41, \"avg_rtt_ms\": 142.1, \"retransmission_rate_pct\": 9.4}, {\"site\": \"Lille\", \"connections\": 28, \"avg_rtt_ms\": 52.8, \"retransmission_rate_pct\": 2.8}, {\"site\": \"Strasbourg\", \"connections\": 16, \"avg_rtt_ms\": 42.4, \"retransmission_rate_pct\": 1.9}]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "Good news: SSH has zero errors. Bad news: it's a latency problem, and it's worse than the averages suggest.\n\n**The problem is WAN distance + retransmissions hitting branch offices hard.**\n\nHere's the per-site picture:\n\n| Site | SSH Latency | TCP RTT | Retransmissions | Verdict |\n|------|------------|---------|----------------|--------|\n| Francfort DC | 18ms | 12ms | 0.4% | Fine |\n| Paris | 48ms | 28ms | 1.2% | Acceptable |\n| Lille | 78ms | 53ms | 2.8% | Noticeable |\n| Strasbourg | 64ms | 42ms | 1.9% | OK |\n| **Lyon** | **143ms** | **98ms** | **6.4%** | **Sluggish** |\n| **Marseille** | **168ms** | **112ms** | **7.1%** | **Sluggish** |\n| **Bordeaux** | **187ms** | **129ms** | **8.2%** | **Bad** |\n| **Toulouse** | **201ms** | **142ms** | **9.4%** | **Bad** |\n\nThe southern offices (Lyon, Marseille, Bordeaux, Toulouse) have both high WAN RTT *and* elevated retransmission rates (6-9%). Retransmissions on SSH are brutal — every retransmit adds a full RTT of delay to keystroke echo, so users in Toulouse are experiencing 200ms+ base latency with spikes to 389ms at p95. That's very perceptible.\n\n**Why it feels sluggish**: SSH is an interactive protocol where every keystroke is a round-trip. At 200ms RTT with 9% retransmissions, users literally see their typing lag. The connection never drops (hence 0 errors), but the user experience is poor.\n\n**Recommendations:**\n1. **Quick win**: Deploy SSH jump hosts at the worst-affected branch offices (Toulouse, Bordeaux, Marseille) to localize the interactive session\n2. **Investigate retransmissions**: 6-9% retransmission rates on the southern MPLS links suggest WAN quality issues — check with your carrier for packet loss on those circuits\n3. **Consider Mosh**: For users who need interactive shells, Mosh (mobile shell) handles high-latency links much better than SSH by using local echo\n4. **Monitor**: Add an SSH latency alert threshold at 150ms to catch degradation early"
+        }
+      ]
+    }
+  ]
+}

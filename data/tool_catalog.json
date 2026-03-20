@@ -1,0 +1,559 @@
+{
+  "version": "1.0",
+  "description": "Complete catalog of Omnis MCP tools for training data generation",
+  "pulled_from": "Live Omnis MCP - 2026-03-20",
+  "categories": [
+    {
+      "name": "discovery",
+      "description": "Explore available data: list applications, tables, and table schemas",
+      "tools": [
+        {
+          "name": "list_applications",
+          "description": "List all monitored applications with data counts.",
+          "parameters": {
+            "required": {},
+            "optional": {}
+          },
+          "example_invocation": {"name": "list_applications", "arguments": {}},
+          "response_key_fields": ["applications[].application_name", "applications[].record_count", "applications[].first_seen", "applications[].last_seen"]
+        },
+        {
+          "name": "list_tables",
+          "description": "List ClickHouse database tables, optionally filtered by category.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "category": {"type": "string", "default": null, "description": "Filter by table category. One of: 'f' (flow/telemetry), 'd' (dimension), 'a' (aggregate), 's' (system)."}
+            }
+          },
+          "example_invocation": {"name": "list_tables", "arguments": {"category": "f"}},
+          "response_key_fields": ["tables[].name", "tables[].engine"]
+        },
+        {
+          "name": "describe_table",
+          "description": "Get schema details for a specific table.",
+          "parameters": {
+            "required": {
+              "table_name": {"type": "string", "description": "Name of the ClickHouse table to describe."}
+            },
+            "optional": {}
+          },
+          "example_invocation": {"name": "describe_table", "arguments": {"table_name": "f_aggregate_telemetry"}},
+          "response_key_fields": ["table_name", "columns[].name", "columns[].type", "columns[].comment"]
+        }
+      ]
+    },
+    {
+      "name": "health",
+      "description": "Cross-application and per-application health metrics: transactions, errors, latency",
+      "tools": [
+        {
+          "name": "get_health_overview",
+          "description": "Cross-application health: total transactions, errors, avg latency, per-application breakdown.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "limit": {"type": "int", "default": null, "description": "Maximum number of results to return."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_health_overview", "arguments": {}},
+          "response_key_fields": ["overall.total_transactions", "overall.total_errors", "overall.avg_response_time_ms", "by_application[].application_name", "by_application[].transactions", "by_application[].errors", "by_application[].error_rate_pct", "by_application[].avg_response_time_ms"]
+        },
+        {
+          "name": "get_application_summary",
+          "description": "Summary metrics for one application.",
+          "parameters": {
+            "required": {
+              "application": {"type": "string", "description": "Application name to get summary for."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "limit": {"type": "int", "default": null, "description": "Maximum number of results to return."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_application_summary", "arguments": {"application": "DNS"}},
+          "response_key_fields": ["transaction_counts", "error_rates", "latency_stats", "top_endpoints"]
+        }
+      ]
+    },
+    {
+      "name": "performance",
+      "description": "Latency distributions, throughput trends, TCP connection health",
+      "tools": [
+        {
+          "name": "get_performance_metrics",
+          "description": "Latency distribution (P50/P90/P95/P99), throughput over time, error breakdown.",
+          "parameters": {
+            "required": {
+              "application": {"type": "string", "description": "Application name to get performance metrics for."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_performance_metrics", "arguments": {"application": "Web Store"}},
+          "response_key_fields": ["latency.p50", "latency.p90", "latency.p95", "latency.p99", "hourly_throughput", "error_details"]
+        },
+        {
+          "name": "get_connection_health",
+          "description": "TCP connection health: setup times, resets, retries, failure rates.",
+          "parameters": {
+            "required": {
+              "application": {"type": "string", "description": "Application name to get TCP connection health for."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_connection_health", "arguments": {"application": "HTTPS"}},
+          "response_key_fields": ["tcp_setup_times", "tcp_resets", "tcp_retries", "failure_rates"]
+        }
+      ]
+    },
+    {
+      "name": "troubleshooting",
+      "description": "Error analysis, slow transaction detection, anomaly detection",
+      "tools": [
+        {
+          "name": "get_errors",
+          "description": "Failed transactions and error details, summarized by error type.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "application": {"type": "string", "default": null, "description": "Filter by application name."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "page": {"type": "int", "default": null, "description": "Page number for pagination."},
+              "page_size": {"type": "int", "default": null, "description": "Number of results per page."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_errors", "arguments": {"application": "DNS"}},
+          "response_key_fields": ["error_summary", "top_error_endpoints", "pagination"]
+        },
+        {
+          "name": "get_slow_transactions",
+          "description": "Transactions with response times above threshold.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "application": {"type": "string", "default": null, "description": "Filter by application name."},
+              "threshold_ms": {"type": "int", "default": 1000, "description": "Response time threshold in milliseconds. Transactions above this are considered slow."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "page": {"type": "int", "default": null, "description": "Page number for pagination."},
+              "page_size": {"type": "int", "default": null, "description": "Number of results per page."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_slow_transactions", "arguments": {"application": "MYSQL", "threshold_ms": 500}},
+          "response_key_fields": ["slow_transaction_summary", "slow_endpoints", "pagination"]
+        },
+        {
+          "name": "get_anomalies",
+          "description": "Detect unusual patterns: high error rates, latency spikes, single-occurrence domains (DGA), unusual ports.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "application": {"type": "string", "default": null, "description": "Filter by application name."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "limit": {"type": "int", "default": null, "description": "Maximum number of results to return."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_anomalies", "arguments": {"application": "DNS"}},
+          "response_key_fields": ["anomalies.high_error_rate[].client_ip", "anomalies.high_error_rate[].server_ip", "anomalies.high_error_rate[].error_rate_pct", "anomalies.latency_spikes[].client_ip", "anomalies.latency_spikes[].server_ip", "anomalies.latency_spikes[].response_time_ms", "anomalies.latency_spikes[].std_devs_above"]
+        }
+      ]
+    },
+    {
+      "name": "traffic",
+      "description": "Traffic volumes, top talkers, flow summaries, and raw flow records",
+      "tools": [
+        {
+          "name": "get_top_talkers",
+          "description": "Top traffic pairs by total bytes transferred.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "limit": {"type": "int", "default": null, "description": "Maximum number of top talker pairs to return."}
+            }
+          },
+          "example_invocation": {"name": "get_top_talkers", "arguments": {"limit": 10}},
+          "response_key_fields": ["topTalkers[].clientIp", "topTalkers[].serverIp", "topTalkers[].app", "topTalkers[].totalBytes"]
+        },
+        {
+          "name": "get_traffic_overview",
+          "description": "Overall traffic patterns: hourly distribution, top clients, top servers.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "limit": {"type": "int", "default": null, "description": "Maximum number of results to return."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_traffic_overview", "arguments": {}},
+          "response_key_fields": ["traffic_statistics", "top_talkers"]
+        },
+        {
+          "name": "get_flow_summary",
+          "description": "Aggregated flow statistics with optional filters.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "client_ip": {"type": "string", "default": null, "description": "Filter by client IP address."},
+              "server_ip": {"type": "string", "default": null, "description": "Filter by server IP address."},
+              "application": {"type": "string", "default": null, "description": "Filter by application name."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "limit": {"type": "int", "default": null, "description": "Maximum number of results to return."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_flow_summary", "arguments": {"application": "DNS"}},
+          "response_key_fields": ["total_counts", "unique_endpoints", "top_patterns"]
+        },
+        {
+          "name": "get_flow_details",
+          "description": "Raw flow records. Requires at least one of: client_ip, server_ip, application.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "client_ip": {"type": "string", "default": null, "description": "Filter by client IP address. At least one of client_ip, server_ip, or application is required."},
+              "server_ip": {"type": "string", "default": null, "description": "Filter by server IP address. At least one of client_ip, server_ip, or application is required."},
+              "application": {"type": "string", "default": null, "description": "Filter by application name. At least one of client_ip, server_ip, or application is required."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "page": {"type": "int", "default": null, "description": "Page number for pagination."},
+              "page_size": {"type": "int", "default": null, "description": "Number of results per page."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_flow_details", "arguments": {"client_ip": "10.0.4.12"}},
+          "response_key_fields": ["flow_records", "pagination"]
+        }
+      ]
+    },
+    {
+      "name": "protocol_deep_dive",
+      "description": "Protocol-specific record inspection for DNS and HTTP",
+      "tools": [
+        {
+          "name": "get_dns_queries",
+          "description": "DNS query records. Requires at least one filter.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "client_ip": {"type": "string", "default": null, "description": "Filter by client IP address. At least one of client_ip, server_ip, domain_contains, or response_code is required."},
+              "server_ip": {"type": "string", "default": null, "description": "Filter by DNS server IP address. At least one of client_ip, server_ip, domain_contains, or response_code is required."},
+              "domain_contains": {"type": "string", "default": null, "description": "Filter by substring match on queried domain. At least one of client_ip, server_ip, domain_contains, or response_code is required."},
+              "response_code": {"type": "int", "default": null, "description": "Filter by DNS response code (e.g., 0=NOERROR, 3=NXDOMAIN). At least one of client_ip, server_ip, domain_contains, or response_code is required."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "page": {"type": "int", "default": null, "description": "Page number for pagination."},
+              "page_size": {"type": "int", "default": null, "description": "Number of results per page."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_dns_queries", "arguments": {"client_ip": "10.0.3.20"}},
+          "response_key_fields": ["dns_query_records", "pagination"]
+        },
+        {
+          "name": "get_http_requests",
+          "description": "HTTP request records. Requires at least one filter.",
+          "parameters": {
+            "required": {},
+            "optional": {
+              "client_ip": {"type": "string", "default": null, "description": "Filter by client IP address. At least one of client_ip, server_ip, host_contains, uri_contains, or status_code is required."},
+              "server_ip": {"type": "string", "default": null, "description": "Filter by server IP address. At least one of client_ip, server_ip, host_contains, uri_contains, or status_code is required."},
+              "host_contains": {"type": "string", "default": null, "description": "Filter by substring match on HTTP Host header. At least one of client_ip, server_ip, host_contains, uri_contains, or status_code is required."},
+              "uri_contains": {"type": "string", "default": null, "description": "Filter by substring match on request URI. At least one of client_ip, server_ip, host_contains, uri_contains, or status_code is required."},
+              "status_code": {"type": "int", "default": null, "description": "Filter by HTTP response status code. At least one of client_ip, server_ip, host_contains, uri_contains, or status_code is required."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "page": {"type": "int", "default": null, "description": "Page number for pagination."},
+              "page_size": {"type": "int", "default": null, "description": "Number of results per page."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_http_requests", "arguments": {"status_code": 500}},
+          "response_key_fields": ["http_request_records", "pagination"]
+        }
+      ]
+    },
+    {
+      "name": "location",
+      "description": "Site-level and community-level metrics, and smart location resolution",
+      "tools": [
+        {
+          "name": "get_site_summary",
+          "description": "Metrics for a specific WAN site.",
+          "parameters": {
+            "required": {
+              "site_name": {"type": "string", "description": "Name of the WAN site to get metrics for."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "limit": {"type": "int", "default": null, "description": "Maximum number of results to return."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_site_summary", "arguments": {"site_name": "Francfort DC"}},
+          "response_key_fields": ["overall_metrics", "application_breakdown", "top_pairs"]
+        },
+        {
+          "name": "get_community_summary",
+          "description": "Metrics for a named IP community.",
+          "parameters": {
+            "required": {
+              "community_name": {"type": "string", "description": "Name of the IP community to get metrics for."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "limit": {"type": "int", "default": null, "description": "Maximum number of results to return."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_community_summary", "arguments": {"community_name": "Databases"}},
+          "response_key_fields": ["overall_metrics", "application_breakdown", "top_pairs"]
+        },
+        {
+          "name": "resolve_location",
+          "description": "Smart resolver: searches sites, communities, and host geo for a location name.",
+          "parameters": {
+            "required": {
+              "location_name": {"type": "string", "description": "Location name to resolve (city, site, community, etc.)."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."}
+            }
+          },
+          "example_invocation": {"name": "resolve_location", "arguments": {"location_name": "Paris"}},
+          "response_key_fields": ["matches", "sorted_by_reliability"]
+        }
+      ]
+    },
+    {
+      "name": "host_analysis",
+      "description": "Per-host activity: client-side and server-side communication summaries",
+      "tools": [
+        {
+          "name": "get_client_activity_summary",
+          "description": "What applications and servers a client IP communicated with.",
+          "parameters": {
+            "required": {
+              "client_ip": {"type": "string", "description": "Client IP address to analyze."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_client_activity_summary", "arguments": {"client_ip": "10.0.4.12"}},
+          "response_key_fields": ["client_activity_by_application", "client_activity_by_server"]
+        },
+        {
+          "name": "get_server_activity_summary",
+          "description": "What clients connected to a server and which applications were used.",
+          "parameters": {
+            "required": {
+              "server_ip": {"type": "string", "description": "Server IP address to analyze."}
+            },
+            "optional": {
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_server_activity_summary", "arguments": {"server_ip": "10.0.5.20"}},
+          "response_key_fields": ["server_activity_by_application", "server_activity_by_client"]
+        }
+      ]
+    },
+    {
+      "name": "topology",
+      "description": "Neo4j graph-based network topology: hosts, connections, paths, reachability, and custom Cypher queries",
+      "tools": [
+        {
+          "name": "get_topology_summary",
+          "description": "Summary counts: hosts, connections, breakdown by site and application.",
+          "parameters": {
+            "required": {},
+            "optional": {}
+          },
+          "example_invocation": {"name": "get_topology_summary", "arguments": {}},
+          "response_key_fields": ["hostCount", "edgeCount", "sites[].site", "sites[].hostCount", "applications[].application", "applications[].connectionCount"]
+        },
+        {
+          "name": "get_topology_schema",
+          "description": "Neo4j graph schema: node labels, relationship types, property keys.",
+          "parameters": {
+            "required": {},
+            "optional": {}
+          },
+          "example_invocation": {"name": "get_topology_schema", "arguments": {}},
+          "response_key_fields": ["labels", "relationshipTypes", "propertyKeys", "indexes"]
+        },
+        {
+          "name": "get_topology_by_site",
+          "description": "All hosts and connections for a specific site.",
+          "parameters": {
+            "required": {
+              "site_name": {"type": "string", "description": "Name of the WAN site to get topology for."}
+            },
+            "optional": {}
+          },
+          "example_invocation": {"name": "get_topology_by_site", "arguments": {"site_name": "Francfort DC"}},
+          "response_key_fields": ["site_hosts", "internal_connections", "external_connections"]
+        },
+        {
+          "name": "get_topology_by_application",
+          "description": "All connections using a specific application/protocol.",
+          "parameters": {
+            "required": {
+              "application": {"type": "string", "description": "Application or protocol name to filter topology by."}
+            },
+            "optional": {
+              "limit": {"type": "int", "default": null, "description": "Maximum number of connections to return."}
+            }
+          },
+          "example_invocation": {"name": "get_topology_by_application", "arguments": {"application": "DNS"}},
+          "response_key_fields": ["connection_count", "client_server_pairs"]
+        },
+        {
+          "name": "get_host_connections",
+          "description": "All connections for a host (as client and as server).",
+          "parameters": {
+            "required": {
+              "ip": {"type": "string", "description": "IP address of the host to get connections for."}
+            },
+            "optional": {}
+          },
+          "example_invocation": {"name": "get_host_connections", "arguments": {"ip": "10.0.2.100"}},
+          "response_key_fields": ["host_info", "outbound_connections", "inbound_connections"]
+        },
+        {
+          "name": "get_host_reachability",
+          "description": "Find all hosts reachable from a given host within N hops.",
+          "parameters": {
+            "required": {
+              "ip": {"type": "string", "description": "IP address of the source host."}
+            },
+            "optional": {
+              "max_hops": {"type": "int", "default": 3, "description": "Maximum number of hops to traverse (1-5)."}
+            }
+          },
+          "example_invocation": {"name": "get_host_reachability", "arguments": {"ip": "10.0.3.20", "max_hops": 2}},
+          "response_key_fields": ["source_host_info", "reachable_hosts", "hop_distances"]
+        },
+        {
+          "name": "find_shortest_path",
+          "description": "Shortest network path between two hosts.",
+          "parameters": {
+            "required": {
+              "from_ip": {"type": "string", "description": "IP address of the source host."},
+              "to_ip": {"type": "string", "description": "IP address of the destination host."}
+            },
+            "optional": {}
+          },
+          "example_invocation": {"name": "find_shortest_path", "arguments": {"from_ip": "10.1.1.10", "to_ip": "10.0.5.20"}},
+          "response_key_fields": ["path", "apps", "hops"]
+        },
+        {
+          "name": "query_topology",
+          "description": "Custom read-only Cypher query on the Neo4j graph.",
+          "parameters": {
+            "required": {
+              "cypher": {"type": "string", "description": "Read-only Cypher query to execute against the Neo4j topology graph."}
+            },
+            "optional": {}
+          },
+          "example_invocation": {"name": "query_topology", "arguments": {"cypher": "MATCH (h:Host) RETURN h.ip, h.hostname LIMIT 10"}},
+          "response_key_fields": ["query_results", "count"]
+        }
+      ]
+    },
+    {
+      "name": "advanced_diagnostics",
+      "description": "Multi-sensor session tracing and custom ClickHouse SQL queries",
+      "tools": [
+        {
+          "name": "get_session_hop_analysis",
+          "description": "Trace a session across multiple sensors. Identify where latency occurs.",
+          "parameters": {
+            "required": {
+              "client_ip": {"type": "string", "description": "Client IP address of the session."},
+              "server_ip": {"type": "string", "description": "Server IP address of the session."},
+              "server_port": {"type": "int", "description": "Server port number of the session."}
+            },
+            "optional": {
+              "application": {"type": "string", "default": null, "description": "Filter by application name."},
+              "hours": {"type": "int", "default": null, "description": "Time window in hours to query."},
+              "site_name": {"type": "string", "default": null, "description": "Filter by WAN site name."},
+              "community_name": {"type": "string", "default": null, "description": "Filter by IP community name."},
+              "sensor_ip": {"type": "string", "default": null, "description": "Filter by sensor IP address."},
+              "sensor_name": {"type": "string", "default": null, "description": "Filter by sensor name."}
+            }
+          },
+          "example_invocation": {"name": "get_session_hop_analysis", "arguments": {"client_ip": "10.0.4.12", "server_ip": "10.0.5.20", "server_port": 3306}},
+          "response_key_fields": ["session_info", "observation_points", "latency_deltas", "problem_indicators"]
+        },
+        {
+          "name": "execute_query",
+          "description": "Custom read-only ClickHouse SQL query.",
+          "parameters": {
+            "required": {
+              "sql": {"type": "string", "description": "Read-only SQL query to execute against ClickHouse."}
+            },
+            "optional": {
+              "parameters": {"type": "object", "default": null, "description": "Query parameters for parameterized queries."},
+              "page": {"type": "int", "default": null, "description": "Page number for pagination."},
+              "page_size": {"type": "int", "default": null, "description": "Number of results per page."},
+              "explain": {"type": "bool", "default": null, "description": "If true, return the query execution plan instead of results."}
+            }
+          },
+          "example_invocation": {"name": "execute_query", "arguments": {"sql": "SELECT application_name, count() FROM f_aggregate_telemetry GROUP BY 1 LIMIT 10"}},
+          "response_key_fields": ["results", "count", "pagination"]
+        }
+      ]
+    }
+  ],
+  "tool_count": 31
+}

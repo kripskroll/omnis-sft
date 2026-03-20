@@ -1,0 +1,5 @@
+data/generated/part_*.jsonl
+data/generated/log_*.txt
+__pycache__/
+*.pyc
+.venv/
