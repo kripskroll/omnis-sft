@@ -1,6 +1,6 @@
 {
     "base_model": "unsloth/Qwen2.5-7B-Instruct",
-    "max_seq_length": 4096,
+    "max_seq_length": 2048,
     "lora_rank": 16,
     "lora_alpha": 32,
     "lora_dropout": 0,
@@ -10,8 +10,8 @@
     ],
     "learning_rate": 2e-4,
     "num_epochs": 3,
-    "per_device_train_batch_size": 4,
-    "gradient_accumulation_steps": 4,
+    "per_device_train_batch_size": 2,
+    "gradient_accumulation_steps": 8,
     "warmup_steps": 10,
     "weight_decay": 0.01,
     "lr_scheduler_type": "cosine",
